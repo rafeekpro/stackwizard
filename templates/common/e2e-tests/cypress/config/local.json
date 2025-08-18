@@ -1,0 +1,17 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "env": {
+    "apiUrl": "http://localhost:8000",
+    "environment": "local",
+    "adminEmail": "admin@example.com",
+    "adminPassword": "Admin123!",
+    "testUserEmail": "testuser@example.com",
+    "testUserPassword": "TestUser123!",
+    "mailhogUrl": "http://localhost:8025",
+    "dbHost": "localhost",
+    "dbPort": 5432,
+    "dbName": "test_db",
+    "dbUser": "postgres",
+    "dbPassword": "postgres"
+  }
+}
