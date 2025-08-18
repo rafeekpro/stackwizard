@@ -1,0 +1,11 @@
+{
+  "baseUrl": "https://staging.example.com",
+  "env": {
+    "apiUrl": "https://api-staging.example.com",
+    "environment": "staging",
+    "adminEmail": "admin@staging.example.com",
+    "adminPassword": "StagingAdmin123!",
+    "testUserEmail": "testuser@staging.example.com",
+    "testUserPassword": "StagingUser123!"
+  }
+}
