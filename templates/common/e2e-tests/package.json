@@ -1,0 +1,55 @@
+{
+  "name": "e2e-tests",
+  "version": "1.0.0",
+  "description": "E2E tests using Cypress with Cucumber",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:chrome": "cypress run --browser chrome",
+    "cy:run:firefox": "cypress run --browser firefox",
+    "cy:run:edge": "cypress run --browser edge",
+    "cy:run:headed": "cypress run --headed",
+    "cy:run:record": "cypress run --record",
+    "cy:run:spec": "cypress run --spec",
+    "cy:run:tag": "cypress run --env TAGS=",
+    "test": "cypress run",
+    "test:smoke": "cypress run --env TAGS='@smoke'",
+    "test:regression": "cypress run --env TAGS='@regression'",
+    "test:auth": "cypress run --spec 'cypress/e2e/features/authentication/*.feature'",
+    "test:users": "cypress run --spec 'cypress/e2e/features/users/*.feature'",
+    "test:admin": "cypress run --spec 'cypress/e2e/features/admin/*.feature'",
+    "test:parallel": "cypress run --record --parallel",
+    "report:generate": "node cypress/support/report-generator.js",
+    "clean:reports": "rm -rf cypress/reports cypress/screenshots cypress/videos"
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^19.2.0",
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.2.0",
+    "@cypress/grep": "^4.0.1",
+    "@faker-js/faker": "^8.3.1",
+    "cypress": "^13.6.1",
+    "cypress-file-upload": "^5.0.8",
+    "cypress-real-events": "^1.11.0",
+    "cypress-wait-until": "^2.0.1",
+    "esbuild": "^0.19.8",
+    "multiple-cucumber-html-reporter": "^3.5.0",
+    "typescript": "^5.3.3"
+  },
+  "cypress-cucumber-preprocessor": {
+    "nonGlobalStepDefinitions": true,
+    "stepDefinitions": "cypress/e2e/step-definitions/**/*.{js,ts}",
+    "html": {
+      "enabled": true,
+      "output": "cypress/reports/cucumber-html/cucumber.html"
+    },
+    "json": {
+      "enabled": true,
+      "output": "cypress/reports/cucumber-json/cucumber.json"
+    },
+    "messages": {
+      "enabled": false
+    },
+    "filterSpecs": true,
+    "omitFiltered": true
+  }
+}

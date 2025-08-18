@@ -1,0 +1,67 @@
+{
+  "admin": {
+    "email": "admin@example.com",
+    "username": "admin",
+    "password": "Admin123!",
+    "fullName": "System Administrator",
+    "role": "admin",
+    "isActive": true,
+    "isVerified": true
+  },
+  "testUser": {
+    "email": "testuser@example.com",
+    "username": "testuser",
+    "password": "TestUser123!",
+    "fullName": "Test User",
+    "role": "user",
+    "isActive": true,
+    "isVerified": true
+  },
+  "newUser": {
+    "email": "newuser@example.com",
+    "username": "newuser",
+    "password": "NewUser123!",
+    "fullName": "New User",
+    "role": "user",
+    "isActive": true,
+    "isVerified": false
+  },
+  "inactiveUser": {
+    "email": "inactive@example.com",
+    "username": "inactive",
+    "password": "Inactive123!",
+    "fullName": "Inactive User",
+    "role": "user",
+    "isActive": false,
+    "isVerified": true
+  },
+  "unverifiedUser": {
+    "email": "unverified@example.com",
+    "username": "unverified",
+    "password": "Unverified123!",
+    "fullName": "Unverified User",
+    "role": "user",
+    "isActive": true,
+    "isVerified": false
+  },
+  "bulkUsers": [
+    {
+      "email": "user1@example.com",
+      "username": "user1",
+      "password": "User1Pass123!",
+      "fullName": "User One"
+    },
+    {
+      "email": "user2@example.com",
+      "username": "user2",
+      "password": "User2Pass123!",
+      "fullName": "User Two"
+    },
+    {
+      "email": "user3@example.com",
+      "username": "user3",
+      "password": "User3Pass123!",
+      "fullName": "User Three"
+    }
+  ]
+}
