@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from app.schemas.user import (
     UserCreate, UserUpdate, UserInDB, User as UserSchema,
-    Token, TokenData, UserPasswordUpdate, PasswordReset
+    Token, TokenData, UserPasswordUpdate, PasswordReset, PasswordResetRequest
 )
 
 
@@ -80,7 +80,6 @@ class TestUserSchemas:
         assert empty_update.full_name is None
         assert empty_update.password is None
         assert empty_update.is_active is None
-        assert empty_update.is_verified is None
         assert empty_update.is_superuser is None
         
         # Partial update
@@ -163,12 +162,15 @@ class TestUserSchemas:
     def test_token_data_schema(self):
         """Test TokenData schema for decoded JWT"""
         # With user_id
-        token_data = TokenData(sub="user-uuid-here")
-        assert token_data.sub == "user-uuid-here"
+        user_id = uuid.uuid4()
+        token_data = TokenData(user_id=user_id)
+        assert token_data.user_id == user_id
+        assert token_data.scopes == []  # Default empty list
         
         # Without user_id (should be None)
         empty_token = TokenData()
-        assert empty_token.sub is None
+        assert empty_token.user_id is None
+        assert empty_token.scopes == []
     
     def test_password_change_schema(self):
         """Test UserPasswordUpdate schema for password updates"""
@@ -187,19 +189,15 @@ class TestUserSchemas:
             )
     
     def test_password_reset_schema(self):
-        """Test PasswordReset schema for forgot password"""
-        # Request reset
-        reset_request = PasswordReset(email="forgot@example.com")
+        """Test PasswordReset schemas for forgot password"""
+        # Request reset (only needs email)
+        reset_request = PasswordResetRequest(email="forgot@example.com")
         assert reset_request.email == "forgot@example.com"
-        assert not hasattr(reset_request, 'token')
-        assert not hasattr(reset_request, 'new_password')
         
-        # Reset with token
+        # Actual reset with token
         reset_with_token = PasswordReset(
-            email="forgot@example.com",
             token="reset-token-here",
             new_password="NewPass123!"
         )
-        assert reset_with_token.email == "forgot@example.com"
         assert reset_with_token.token == "reset-token-here"
         assert reset_with_token.new_password == "NewPass123!"

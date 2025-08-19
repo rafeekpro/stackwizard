@@ -1,10 +1,10 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_, and_
+from sqlalchemy import select, func, or_, and_, desc
 
 from app.core.dependencies import get_current_superuser, get_async_db
 from app.models.user import User
@@ -18,6 +18,9 @@ from app.schemas.user import (
 from app.services.auth import AuthService, SecurityService
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+# Audit log storage (in production, this should be in database)
+audit_log: List[Dict[str, Any]] = []
 
 @router.get("/users", response_model=List[UserSchema])
 async def get_all_users(
@@ -232,6 +235,14 @@ async def update_user_admin(
     await db.commit()
     await db.refresh(user)
     
+    # Log admin action
+    log_admin_action(
+        action="update_user",
+        user_id=user.id,
+        admin_id=current_user.id,
+        details=update_data
+    )
+    
     return UserResponse(
         user=UserSchema.from_orm(user),
         message="User updated successfully"
@@ -386,3 +397,103 @@ async def verify_user_email_admin(
         user=UserSchema.from_orm(user),
         message="User email verified successfully"
     )
+
+@router.get("/stats")
+async def get_system_stats(
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Get system statistics (admin only)
+    """
+    # Total users
+    total_query = select(func.count(User.id))
+    total_result = await db.execute(total_query)
+    total_users = total_result.scalar() or 0
+    
+    # Active users
+    active_query = select(func.count(User.id)).where(User.is_active == True)
+    active_result = await db.execute(active_query)
+    active_users = active_result.scalar() or 0
+    
+    # Verified users
+    verified_query = select(func.count(User.id)).where(User.is_verified == True)
+    verified_result = await db.execute(verified_query)
+    verified_users = verified_result.scalar() or 0
+    
+    # Superusers
+    superuser_query = select(func.count(User.id)).where(User.is_superuser == True)
+    superuser_result = await db.execute(superuser_query)
+    superusers = superuser_result.scalar() or 0
+    
+    # Users registered in last 7 days
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    new_users_query = select(func.count(User.id)).where(User.created_at >= week_ago)
+    new_users_result = await db.execute(new_users_query)
+    new_users_this_week = new_users_result.scalar() or 0
+    
+    # Users logged in last 24 hours
+    day_ago = datetime.utcnow() - timedelta(days=1)
+    active_today_query = select(func.count(User.id)).where(
+        and_(User.last_login_at >= day_ago, User.last_login_at is not None)
+    )
+    active_today_result = await db.execute(active_today_query)
+    active_today = active_today_result.scalar() or 0
+    
+    return {
+        "total_users": total_users,
+        "active_users": active_users,
+        "verified_users": verified_users,
+        "superusers": superusers,
+        "inactive_users": total_users - active_users,
+        "unverified_users": total_users - verified_users,
+        "new_users_this_week": new_users_this_week,
+        "active_today": active_today
+    }
+
+@router.get("/recent-registrations", response_model=List[UserSchema])
+async def get_recent_registrations(
+    limit: int = Query(10, ge=1, le=100, description="Number of users to return"),
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Get recently registered users (admin only)
+    """
+    query = select(User).order_by(desc(User.created_at)).limit(limit)
+    result = await db.execute(query)
+    users = result.scalars().all()
+    
+    return [UserSchema.from_orm(user) for user in users]
+
+@router.get("/audit-log")
+async def get_audit_log(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    current_user: User = Depends(get_current_superuser)
+) -> Any:
+    """
+    Get audit log of admin actions (admin only)
+    """
+    # Return paginated audit log
+    return {
+        "total": len(audit_log),
+        "items": audit_log[skip:skip + limit]
+    }
+
+def log_admin_action(
+    action: str,
+    user_id: UUID,
+    admin_id: UUID,
+    details: Optional[Dict[str, Any]] = None
+):
+    """
+    Helper function to log admin actions
+    """
+    audit_log.append({
+        "timestamp": datetime.utcnow().isoformat(),
+        "action": action,
+        "user_id": str(user_id),
+        "admin_id": str(admin_id),
+        "details": details or {}
+    })

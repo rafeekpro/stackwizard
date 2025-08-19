@@ -14,19 +14,53 @@ from sqlalchemy.pool import StaticPool
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from app.main import app
-from app.db.database import Base, get_db
+from app.db.database import Base, get_db, get_async_db
+from tests.db_adapter import AsyncSessionAdapter
+
+# Create a test app without lifespan for testing
+from fastapi import FastAPI
+from app.api.v1.api import api_router
+from app.core.config import settings
+
+test_app = FastAPI(
+    title=settings.PROJECT_NAME + " - Test",
+    version=settings.VERSION,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+)
+
+# Add CORS middleware
+from fastapi.middleware.cors import CORSMiddleware
+test_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+test_app.include_router(api_router, prefix=settings.API_V1_STR)
 from app.models.user import User
 from app.core.config import get_settings
 from app.services.auth import AuthService
 
-# Use in-memory SQLite for tests
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
+# Use PostgreSQL for tests - same as production but different database
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql://postgres:postgres@localhost:5432/test_app_test"
 )
+
+# For PostgreSQL, we don't need check_same_thread or StaticPool
+if SQLALCHEMY_DATABASE_URL.startswith("postgresql"):
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+else:
+    # Fallback to SQLite if needed
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -54,10 +88,14 @@ def db() -> Generator[Session, None, None]:
 @pytest.fixture(scope="function")
 def client(db: Session) -> TestClient:
     """Create a test client with database override"""
-    app.dependency_overrides[get_db] = lambda: db
-    with TestClient(app) as test_client:
+    async def override_get_async_db():
+        yield AsyncSessionAdapter(db)
+    
+    test_app.dependency_overrides[get_db] = lambda: db
+    test_app.dependency_overrides[get_async_db] = override_get_async_db
+    with TestClient(test_app) as test_client:
         yield test_client
-    app.dependency_overrides.clear()
+    test_app.dependency_overrides.clear()
 
 
 @pytest.fixture

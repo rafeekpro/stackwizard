@@ -18,6 +18,7 @@ const pages = [
   { name: 'Home', path: '/' },
   { name: 'Users', path: '/users' },
   { name: 'Items', path: '/items' },
+  { name: 'Admin', path: '/admin' },
   { name: 'About', path: '/about' },
 ];
 
