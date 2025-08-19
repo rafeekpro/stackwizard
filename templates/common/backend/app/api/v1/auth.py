@@ -242,31 +242,26 @@ async def logout(
     # For now, we just confirm the logout action
     return MessageResponse(message="Successfully logged out")
 
-@router.post("/password-recovery/{email}", response_model=MessageResponse)
+@router.post("/password-recovery", response_model=MessageResponse)
 async def recover_password(
-    email: str,
+    reset_request: PasswordResetRequest,
     db: AsyncSession = Depends(get_async_db)
 ) -> Any:
     """
     Password Recovery: Send password reset email
     """
-    # Validate email format
-    if not AuthService.validate_email_format(email):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid email format"
-        )
+    email = reset_request.email
     
-    user = await AuthService.get_user_by_email(db, email)
+    user = await AuthService.get_user_by_email(db, str(email))
     if not user:
         # Don't reveal if email exists or not for security
         return MessageResponse(
-            message="If this email is registered, you will receive password reset instructions"
+            message="Password recovery email sent"
         )
     
     if not user.is_active:
         return MessageResponse(
-            message="If this email is registered, you will receive password reset instructions"
+            message="Password recovery email sent"
         )
     
     # Generate password reset token
@@ -280,7 +275,7 @@ async def recover_password(
     # await send_password_reset_email(user.email, reset_token)
     
     return MessageResponse(
-        message="If this email is registered, you will receive password reset instructions"
+        message="Password recovery email sent"
     )
 
 @router.post("/reset-password", response_model=MessageResponse)
@@ -313,7 +308,7 @@ async def reset_password(
     
     await db.commit()
     
-    return MessageResponse(message="Password has been reset successfully")
+    return MessageResponse(message="Password reset successfully")
 
 @router.get("/verify-token", response_model=UserSchema)
 async def verify_token(
