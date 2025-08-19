@@ -1,0 +1,78 @@
+#!/bin/bash
+# Pre-commit hook to protect project stability
+
+echo "🛡️ Running protection checks..."
+
+# 1. Check if tests pass
+echo "📋 Running tests..."
+python -m pytest tests/ -q
+if [ $? -ne 0 ]; then
+    echo "❌ Tests are failing! Commit blocked."
+    echo "Run 'pytest tests/ -v' to see failures"
+    exit 1
+fi
+
+# 2. Count passing tests
+PASSING=$(python -m pytest tests/ -q | grep -o "[0-9]* passed" | grep -o "[0-9]*")
+if [ "$PASSING" -lt "77" ]; then
+    echo "❌ Test count decreased! Expected >=77, got $PASSING"
+    echo "Project protection violated!"
+    exit 1
+fi
+
+# 3. Check for forbidden patterns
+echo "🔍 Checking for dangerous patterns..."
+DANGEROUS_PATTERNS=(
+    "DROP TABLE"
+    "DELETE FROM users WHERE"
+    "TRUNCATE"
+    "os.system"
+    "eval("
+    "__import__"
+    "exec("
+)
+
+for pattern in "${DANGEROUS_PATTERNS[@]}"; do
+    if git diff --cached | grep -q "$pattern"; then
+        echo "❌ Dangerous pattern detected: $pattern"
+        echo "Review your changes!"
+        exit 1
+    fi
+done
+
+# 4. Check protected files
+echo "🔒 Checking protected files..."
+PROTECTED_FILES=(
+    "app/core/security.py"
+    "app/core/dependencies.py"
+    "app/models/user.py"
+    ".claude-protect.json"
+)
+
+for file in "${PROTECTED_FILES[@]}"; do
+    if git diff --cached --name-only | grep -q "^$file$"; then
+        echo "⚠️  Warning: Modifying protected file: $file"
+        echo "Are you sure? Type 'YES' to continue (Ctrl+C to cancel):"
+        read confirmation
+        if [ "$confirmation" != "YES" ]; then
+            echo "❌ Commit cancelled"
+            exit 1
+        fi
+    fi
+done
+
+# 5. Check for test modifications
+if git diff --cached --name-only | grep -q "^tests/"; then
+    echo "⚠️  Warning: Test files are being modified!"
+    echo "This could break the 100% pass rate."
+    echo "Type 'CONFIRM' to proceed:"
+    read confirmation
+    if [ "$confirmation" != "CONFIRM" ]; then
+        echo "❌ Commit cancelled"
+        exit 1
+    fi
+fi
+
+echo "✅ All protection checks passed!"
+echo "📊 Stats: $PASSING tests passing"
+exit 0
