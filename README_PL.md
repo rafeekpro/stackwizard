@@ -41,7 +41,7 @@ your-project/
 
 ```bash
 # Sklonuj lub pobierz kod generatora
-cd stackwizard-cli
+cd project-generator-cli
 
 # Zainstaluj zależności
 npm install

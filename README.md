@@ -41,7 +41,7 @@ your-project/
 
 ```bash
 # Clone or download the generator code
-cd stackwizard-cli
+cd project-generator-cli
 
 # Install dependencies
 npm install
