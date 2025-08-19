@@ -1,0 +1,68 @@
+# Configuration for auto-labeling PRs
+
+backend:
+  - app/**/*
+  - alembic/**/*
+
+frontend:
+  - frontend/**/*
+  - src/**/*
+  - public/**/*
+
+tests:
+  - tests/**/*
+  - test_*.py
+  - '*_test.py'
+
+documentation:
+  - '*.md'
+  - docs/**/*
+  - LICENSE
+
+docker:
+  - Dockerfile*
+  - docker-compose*.yml
+  - .dockerignore
+
+ci/cd:
+  - .github/**/*
+  - .gitlab-ci.yml
+  - .travis.yml
+
+dependencies:
+  - requirements*.txt
+  - package*.json
+  - Pipfile*
+  - poetry.lock
+  - pyproject.toml
+
+security:
+  - app/core/security.py
+  - app/core/dependencies.py
+  - app/api/*/auth.py
+  - '**/auth*'
+  - '**/security*'
+
+database:
+  - app/models/**
+  - alembic/versions/**
+  - app/crud/**
+
+api:
+  - app/api/**
+  - app/schemas/**
+
+critical:
+  - app/core/**
+  - app/models/user.py
+  - .env*
+  - '**/*secret*'
+  - '**/*token*'
+
+config:
+  - '*.json'
+  - '*.yml'
+  - '*.yaml'
+  - '*.toml'
+  - '*.ini'
+  - .env*

@@ -1,0 +1,286 @@
+name: PR Protection
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  pr-validation:
+    name: Validate Pull Request
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all history for comparisons
+    
+    - name: Check PR Title
+      uses: amannn/action-semantic-pull-request@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        types: |
+          feat
+          fix
+          docs
+          style
+          refactor
+          perf
+          test
+          build
+          ci
+          chore
+          revert
+        requireScope: false
+        subjectPattern: ^(?![A-Z]).+$
+        subjectPatternError: |
+          The subject "{subject}" found in the pull request title "{title}"
+          didn't match the configured pattern. Please ensure that the subject
+          doesn't start with an uppercase character.
+    
+    - name: Check for Breaking Changes
+      run: |
+        echo "🔍 Checking for breaking changes..."
+        
+        # Get list of changed files
+        CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+        
+        # Check if critical files are modified
+        CRITICAL_FILES=(
+          "app/core/security.py"
+          "app/core/dependencies.py"
+          "app/models/user.py"
+          "app/api/v1/auth.py"
+        )
+        
+        for file in "${CRITICAL_FILES[@]}"; do
+          if echo "$CHANGED_FILES" | grep -q "^$file$"; then
+            echo "⚠️ Critical file modified: $file"
+            echo "::warning file=$file::Critical file modified - requires careful review"
+          fi
+        done
+    
+    - name: Check Deleted Endpoints
+      run: |
+        echo "🔍 Checking for deleted endpoints..."
+        
+        # Count endpoints in main branch
+        git checkout origin/main
+        ENDPOINTS_MAIN=$(grep -r "@router" app/api/ 2>/dev/null | wc -l || echo 0)
+        
+        # Count endpoints in PR branch
+        git checkout HEAD
+        ENDPOINTS_PR=$(grep -r "@router" app/api/ 2>/dev/null | wc -l || echo 0)
+        
+        if [ "$ENDPOINTS_PR" -lt "$ENDPOINTS_MAIN" ]; then
+          echo "❌ Endpoints have been removed! Main: $ENDPOINTS_MAIN, PR: $ENDPOINTS_PR"
+          echo "::error::Endpoints cannot be removed without explicit approval"
+          exit 1
+        fi
+        
+        echo "✅ Endpoint count maintained or increased: $ENDPOINTS_PR"
+    
+    - name: Label PR
+      uses: actions/labeler@v4
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        configuration-path: .github/labeler.yml
+
+  test-comparison:
+    name: Compare Test Results
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest-json-report
+    
+    - name: Run tests on main branch
+      env:
+        DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+        SECRET_KEY: test-secret-key
+      run: |
+        git checkout origin/main
+        pytest tests/ --json-report --json-report-file=main-results.json || true
+        MAIN_PASSED=$(python -c "import json; data=json.load(open('main-results.json')); print(data['summary'].get('passed', 0))")
+        echo "MAIN_PASSED=$MAIN_PASSED" >> $GITHUB_ENV
+    
+    - name: Run tests on PR branch
+      env:
+        DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+        SECRET_KEY: test-secret-key
+      run: |
+        git checkout HEAD
+        pytest tests/ --json-report --json-report-file=pr-results.json || true
+        PR_PASSED=$(python -c "import json; data=json.load(open('pr-results.json')); print(data['summary'].get('passed', 0))")
+        echo "PR_PASSED=$PR_PASSED" >> $GITHUB_ENV
+    
+    - name: Compare results
+      run: |
+        echo "📊 Test Results Comparison:"
+        echo "Main branch: ${{ env.MAIN_PASSED }} tests passing"
+        echo "PR branch: ${{ env.PR_PASSED }} tests passing"
+        
+        if [ "${{ env.PR_PASSED }}" -lt "${{ env.MAIN_PASSED }}" ]; then
+          echo "❌ Test regression detected!"
+          echo "::error::Test count decreased from ${{ env.MAIN_PASSED }} to ${{ env.PR_PASSED }}"
+          exit 1
+        fi
+        
+        echo "✅ No test regression"
+    
+    - name: Comment PR with results
+      uses: actions/github-script@v6
+      if: always()
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const mainPassed = '${{ env.MAIN_PASSED }}' || '0';
+          const prPassed = '${{ env.PR_PASSED }}' || '0';
+          const diff = parseInt(prPassed) - parseInt(mainPassed);
+          
+          let emoji = '✅';
+          let status = 'maintained';
+          if (diff > 0) {
+            emoji = '🎉';
+            status = 'improved';
+          } else if (diff < 0) {
+            emoji = '❌';
+            status = 'regressed';
+          }
+          
+          const body = `## ${emoji} Test Results
+          
+          | Branch | Tests Passing |
+          |--------|--------------|
+          | main   | ${mainPassed} |
+          | PR     | ${prPassed} |
+          | **Difference** | **${diff >= 0 ? '+' : ''}${diff}** |
+          
+          Status: Test coverage has ${status}.
+          
+          ${diff < 0 ? '⚠️ **Warning**: This PR reduces test coverage!' : ''}
+          ${diff > 0 ? '🎉 Great job improving test coverage!' : ''}
+          `;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body
+          });
+
+  auto-review:
+    name: Automated Code Review
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Run Code Review
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { execSync } = require('child_process');
+          
+          // Get changed files
+          const files = execSync('git diff --name-only origin/main...HEAD')
+            .toString()
+            .split('\n')
+            .filter(f => f);
+          
+          const warnings = [];
+          const errors = [];
+          
+          for (const file of files) {
+            // Check for test modifications
+            if (file.startsWith('tests/') && !file.includes('test_new')) {
+              warnings.push(`⚠️ Test file modified: ${file}`);
+            }
+            
+            // Check for security file changes
+            if (file.includes('security') || file.includes('auth')) {
+              errors.push(`🔒 Security-related file changed: ${file}`);
+            }
+            
+            // Check for model changes
+            if (file.includes('models/') && file.endsWith('.py')) {
+              warnings.push(`📊 Database model changed: ${file}`);
+            }
+            
+            // Check for deleted files
+            try {
+              execSync(`git show HEAD:${file}`);
+            } catch {
+              if (file.includes('api/') || file.includes('endpoints')) {
+                errors.push(`❌ API file deleted: ${file}`);
+              }
+            }
+          }
+          
+          if (errors.length > 0 || warnings.length > 0) {
+            let comment = '## 🤖 Automated Review\n\n';
+            
+            if (errors.length > 0) {
+              comment += '### ❌ Critical Issues\n';
+              errors.forEach(e => comment += `- ${e}\n`);
+              comment += '\n';
+            }
+            
+            if (warnings.length > 0) {
+              comment += '### ⚠️ Warnings\n';
+              warnings.forEach(w => comment += `- ${w}\n`);
+            }
+            
+            comment += '\n### 📋 Review Checklist\n';
+            comment += '- [ ] All tests pass\n';
+            comment += '- [ ] No breaking changes\n';
+            comment += '- [ ] Security review completed\n';
+            comment += '- [ ] Documentation updated\n';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+            
+            if (errors.length > 0) {
+              core.setFailed('Critical issues found in PR');
+            }
+          }
