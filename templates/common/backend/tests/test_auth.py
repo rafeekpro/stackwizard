@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.services.auth import AuthService
+from app.services.auth_sync import AuthServiceSync
 from app.models.user import User
 from app.core.config import get_settings
 
@@ -21,7 +22,7 @@ class TestPasswordHashing:
     def test_password_hash_is_different_from_plain(self):
         """Test that hashed password is different from plain text"""
         plain_password = "TestPassword123!"
-        hashed = AuthService.get_password_hash(plain_password)
+        hashed = AuthServiceSync.get_password_hash(plain_password)
         
         assert hashed != plain_password
         assert len(hashed) > 50  # Bcrypt hashes are long
@@ -30,22 +31,22 @@ class TestPasswordHashing:
     def test_same_password_different_hashes(self):
         """Test that same password generates different hashes (salt)"""
         plain_password = "TestPassword123!"
-        hash1 = AuthService.get_password_hash(plain_password)
-        hash2 = AuthService.get_password_hash(plain_password)
+        hash1 = AuthServiceSync.get_password_hash(plain_password)
+        hash2 = AuthServiceSync.get_password_hash(plain_password)
         
         assert hash1 != hash2  # Different salts
     
     def test_verify_correct_password(self):
         """Test verifying correct password"""
         plain_password = "TestPassword123!"
-        hashed = AuthService.get_password_hash(plain_password)
+        hashed = AuthServiceSync.get_password_hash(plain_password)
         
         assert AuthService.verify_password(plain_password, hashed) is True
     
     def test_verify_incorrect_password(self):
         """Test verifying incorrect password"""
         plain_password = "TestPassword123!"
-        hashed = AuthService.get_password_hash(plain_password)
+        hashed = AuthServiceSync.get_password_hash(plain_password)
         
         assert AuthService.verify_password("WrongPassword", hashed) is False
 
@@ -100,18 +101,19 @@ class TestJWTTokens:
             algorithms=[settings.ALGORITHM]
         )
         
-        exp_time = datetime.fromtimestamp(payload["exp"])
+        exp_time = datetime.utcfromtimestamp(payload["exp"])
         now = datetime.utcnow()
         
-        # Should expire in about 30 minutes (default)
+        # Check it expires in the configured time (ACCESS_TOKEN_EXPIRE_MINUTES)
         time_diff = exp_time - now
-        assert time_diff.total_seconds() > 1700  # More than 28 minutes
-        assert time_diff.total_seconds() < 1900  # Less than 32 minutes
+        expected_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        # Allow 60 second tolerance
+        assert abs(time_diff.total_seconds() - expected_seconds) < 60
     
     def test_refresh_token_longer_expiration(self):
         """Test that refresh token has longer expiration than access token"""
         user_id = "test-user-id"
-        refresh_token = create_refresh_token(subject=user_id)
+        refresh_token = AuthService.create_refresh_token(data={"sub": user_id})
         
         payload = jwt.decode(
             refresh_token, 
@@ -119,7 +121,7 @@ class TestJWTTokens:
             algorithms=[settings.ALGORITHM]
         )
         
-        exp_time = datetime.fromtimestamp(payload["exp"])
+        exp_time = datetime.utcfromtimestamp(payload["exp"])
         now = datetime.utcnow()
         
         # Should expire in about 7 days (default)
@@ -129,12 +131,13 @@ class TestJWTTokens:
     
     def test_verify_valid_token(self):
         """Test verifying a valid token"""
-        user_id = "test-user-id"
+        import uuid
+        user_id = str(uuid.uuid4())  # Use valid UUID
         token = AuthService.create_access_token(data={"sub": user_id})
         
         token_data = AuthService.verify_token(token)
-        verified_user_id = str(token_data.user_id) if token_data else None
-        assert verified_user_id == user_id
+        assert token_data is not None
+        assert str(token_data.user_id) == user_id
     
     def test_verify_invalid_token(self):
         """Test verifying an invalid token"""
@@ -161,65 +164,65 @@ class TestJWTTokens:
 class TestAuthentication:
     """Test user authentication"""
     
-    async def test_authenticate_valid_user(self, db: Session):
+    def test_authenticate_valid_user(self, db: Session):
         """Test authenticating a valid user"""
         # Create user
         user = User(
             email="auth@example.com",
             username="authuser",
-            hashed_password=AuthService.get_password_hash("ValidPass123!")
+            hashed_password=AuthServiceSync.get_password_hash("ValidPass123!")
         )
         db.add(user)
         db.commit()
         
         # Authenticate
-        authenticated = await AuthService.authenticate_user(db, "auth@example.com", "ValidPass123!")
+        authenticated = AuthServiceSync.authenticate_user(db, "auth@example.com", "ValidPass123!")
         assert authenticated is not None
         assert authenticated.email == "auth@example.com"
     
-    async def test_authenticate_invalid_password(self, db: Session):
+    def test_authenticate_invalid_password(self, db: Session):
         """Test authentication with wrong password"""
         # Create user
         user = User(
             email="wrong@example.com",
             username="wronguser",
-            hashed_password=AuthService.get_password_hash("ValidPass123!")
+            hashed_password=AuthServiceSync.get_password_hash("ValidPass123!")
         )
         db.add(user)
         db.commit()
         
         # Try to authenticate with wrong password
-        authenticated = await AuthService.authenticate_user(db, "wrong@example.com", "WrongPassword")
-        assert authenticated is False
+        authenticated = AuthServiceSync.authenticate_user(db, "wrong@example.com", "WrongPassword")
+        assert authenticated is None
     
-    async def test_authenticate_nonexistent_user(self, db: Session):
+    def test_authenticate_nonexistent_user(self, db: Session):
         """Test authentication with non-existent user"""
-        authenticated = await AuthService.authenticate_user(db, "nonexistent@example.com", "SomePass123!")
-        assert authenticated is False
+        authenticated = AuthServiceSync.authenticate_user(db, "nonexistent@example.com", "SomePass123!")
+        assert authenticated is None
     
-    async def test_authenticate_inactive_user(self, db: Session):
+    def test_authenticate_inactive_user(self, db: Session):
         """Test that inactive users cannot authenticate"""
         # Create inactive user
         user = User(
             email="inactive@example.com",
             username="inactiveuser",
-            hashed_password=AuthService.get_password_hash("ValidPass123!"),
+            hashed_password=AuthServiceSync.get_password_hash("ValidPass123!"),
             is_active=False
         )
         db.add(user)
         db.commit()
         
         # Try to authenticate
-        authenticated = await AuthService.authenticate_user(db, "inactive@example.com", "ValidPass123!")
-        assert authenticated is False
+        authenticated = AuthServiceSync.authenticate_user(db, "inactive@example.com", "ValidPass123!")
+        assert authenticated is None
     
-    async def test_authenticate_updates_login_tracking(self, db: Session):
+    def test_authenticate_updates_login_tracking(self, db: Session):
         """Test that successful authentication updates login tracking"""
         # Create user
         user = User(
             email="tracking@example.com",
             username="trackinguser",
-            hashed_password=AuthService.get_password_hash("ValidPass123!"),
+            hashed_password=AuthServiceSync.get_password_hash("ValidPass123!"),
             login_count=0
         )
         db.add(user)
@@ -229,7 +232,7 @@ class TestAuthentication:
         original_login_time = user.last_login_at
         
         # Authenticate
-        authenticated = await AuthService.authenticate_user(db, "tracking@example.com", "ValidPass123!")
+        authenticated = AuthServiceSync.authenticate_user(db, "tracking@example.com", "ValidPass123!")
         assert authenticated is not None
         
         # Check login tracking was updated
@@ -272,7 +275,7 @@ class TestAuthEndpoints:
         )
         
         assert response.status_code == 401
-        assert "Invalid credentials" in response.json()["detail"]
+        assert "Incorrect email or password" in response.json()["detail"]
     
     def test_login_endpoint_nonexistent_user(self, client: TestClient):
         """Test login with non-existent user"""
@@ -285,7 +288,7 @@ class TestAuthEndpoints:
         )
         
         assert response.status_code == 401
-        assert "Invalid credentials" in response.json()["detail"]
+        assert "Incorrect email or password" in response.json()["detail"]
     
     def test_register_endpoint_success(self, client: TestClient):
         """Test successful registration"""
@@ -319,7 +322,7 @@ class TestAuthEndpoints:
         )
         
         assert response.status_code == 400
-        assert "already registered" in response.json()["detail"].lower()
+        assert "already exists" in response.json()["detail"].lower()
     
     def test_register_endpoint_weak_password(self, client: TestClient):
         """Test registration with weak password"""
@@ -333,7 +336,10 @@ class TestAuthEndpoints:
         )
         
         assert response.status_code == 422
-        assert "validation error" in response.json()["detail"].lower()
+        # For Pydantic validation errors, detail is a list of error objects
+        errors = response.json()["detail"]
+        assert isinstance(errors, list)
+        assert any("password" in str(error).lower() for error in errors)
     
     def test_refresh_token_endpoint(self, client: TestClient, test_user: User):
         """Test refresh token endpoint"""

@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import UsersPage from './pages/UsersPage';
 import ItemsPage from './pages/ItemsPage';
 import AboutPage from './pages/AboutPage';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/users" element={<UsersPage />} />
           <Route path="/items" element={<ItemsPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </Box>
     </Box>
