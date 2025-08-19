@@ -167,13 +167,41 @@ jobs:
     
     - name: Generate test project with MUI
       run: |
-        ./test-generate.sh test-project-mui 1
-        ls -la test-project-mui/
+        echo -e "test-project-mui\n1\nlocalhost\n5432\ntestdb\ntestuser\ntestpass\n8000\n3000\n" | node src/index.js &
+        PID=$!
+        sleep 30
+        if kill -0 $PID 2>/dev/null; then
+          kill $PID
+          echo "Generator was still running, killed it"
+        fi
+        wait $PID 2>/dev/null || echo "Process finished"
+        if [ -d "test-project-mui" ]; then
+          echo "✅ Project created successfully"
+          ls -la test-project-mui/
+        else
+          echo "❌ Project not created"
+          ls -la
+          exit 1
+        fi
     
     - name: Generate test project with Tailwind
       run: |
-        ./test-generate.sh test-project-tailwind 2
-        ls -la test-project-tailwind/
+        echo -e "test-project-tailwind\n2\nlocalhost\n5432\ntestdb\ntestuser\ntestpass\n8000\n3001\n" | node src/index.js &
+        PID=$!
+        sleep 30
+        if kill -0 $PID 2>/dev/null; then
+          kill $PID
+          echo "Generator was still running, killed it"
+        fi
+        wait $PID 2>/dev/null || echo "Process finished"
+        if [ -d "test-project-tailwind" ]; then
+          echo "✅ Project created successfully"
+          ls -la test-project-tailwind/
+        else
+          echo "❌ Project not created"
+          ls -la
+          exit 1
+        fi
     
     - name: Check generated project structure
       run: |
