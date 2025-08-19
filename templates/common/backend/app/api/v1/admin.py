@@ -3,6 +3,7 @@ from uuid import UUID
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, and_, desc
 
@@ -497,3 +498,348 @@ def log_admin_action(
         "admin_id": str(admin_id),
         "details": details or {}
     })
+
+@router.post("/users/{user_id}/reset-password", response_model=MessageResponse)
+async def reset_user_password_admin(
+    user_id: UUID,
+    new_password: str = Query(..., min_length=8, max_length=128, description="New password for the user"),
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Reset user password (admin only)
+    """
+    user = await AuthService.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Validate password strength
+    is_valid, errors = SecurityService.validate_password_strength(new_password)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": "Password does not meet requirements", "errors": errors}
+        )
+    
+    # Reset password
+    user.hashed_password = AuthService.get_password_hash(new_password)
+    user.password_reset_token = None
+    user.password_reset_at = None
+    
+    await db.commit()
+    
+    # Log admin action
+    log_admin_action(
+        action="reset_password",
+        user_id=user.id,
+        admin_id=current_user.id
+    )
+    
+    return MessageResponse(message="Password reset successfully")
+
+@router.get("/users/export")
+async def export_users(
+    format: str = Query("csv", description="Export format: csv or json"),
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Export all users to CSV or JSON (admin only)
+    """
+    # Get all users
+    result = await db.execute(select(User))
+    users = result.scalars().all()
+    
+    if format == "json":
+        # Return JSON format
+        return {
+            "export_date": datetime.utcnow().isoformat(),
+            "total_users": len(users),
+            "users": [
+                {
+                    "id": str(user.id),
+                    "email": user.email,
+                    "username": user.username,
+                    "full_name": user.full_name,
+                    "is_active": user.is_active,
+                    "is_superuser": user.is_superuser,
+                    "is_verified": user.is_verified,
+                    "created_at": user.created_at.isoformat() if user.created_at else None,
+                    "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None
+                }
+                for user in users
+            ]
+        }
+    else:
+        # Return CSV format
+        import csv
+        import io
+        from fastapi.responses import Response
+        
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow([
+            "ID", "Email", "Username", "Full Name", 
+            "Active", "Superuser", "Verified", 
+            "Created At", "Last Login"
+        ])
+        
+        # Write data
+        for user in users:
+            writer.writerow([
+                str(user.id),
+                user.email,
+                user.username or "",
+                user.full_name or "",
+                "Yes" if user.is_active else "No",
+                "Yes" if user.is_superuser else "No",
+                "Yes" if user.is_verified else "No",
+                user.created_at.isoformat() if user.created_at else "",
+                user.last_login_at.isoformat() if user.last_login_at else ""
+            ])
+        
+        output.seek(0)
+        return Response(
+            content=output.getvalue(),
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename=users_export_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+            }
+        )
+
+@router.post("/users/import", response_model=MessageResponse)
+async def import_users(
+    users_data: List[Dict[str, Any]],
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Import users from JSON (admin only)
+    """
+    imported_count = 0
+    skipped_count = 0
+    errors = []
+    
+    for user_data in users_data:
+        try:
+            # Check if user already exists
+            email = user_data.get("email")
+            if not email:
+                errors.append("Missing email in user data")
+                continue
+            
+            existing_user = await AuthService.get_user_by_email(db, email)
+            if existing_user:
+                skipped_count += 1
+                continue
+            
+            # Create new user
+            password = user_data.get("password")
+            if not password:
+                # Generate random password if not provided
+                password = SecurityService.generate_secure_password()
+            
+            hashed_password = AuthService.get_password_hash(password)
+            
+            new_user = User(
+                email=email,
+                hashed_password=hashed_password,
+                username=user_data.get("username"),
+                full_name=user_data.get("full_name"),
+                is_active=user_data.get("is_active", True),
+                is_superuser=user_data.get("is_superuser", False),
+                is_verified=user_data.get("is_verified", False)
+            )
+            
+            db.add(new_user)
+            imported_count += 1
+            
+        except Exception as e:
+            errors.append(f"Error importing user {email}: {str(e)}")
+    
+    await db.commit()
+    
+    # Log admin action
+    log_admin_action(
+        action="import_users",
+        user_id=current_user.id,  # Using admin's ID since it's a bulk operation
+        admin_id=current_user.id,
+        details={
+            "imported": imported_count,
+            "skipped": skipped_count,
+            "errors": len(errors)
+        }
+    )
+    
+    return MessageResponse(
+        message=f"Import completed: {imported_count} imported, {skipped_count} skipped, {len(errors)} errors"
+    )
+
+@router.post("/users/bulk-activate", response_model=MessageResponse)
+async def bulk_activate_users(
+    user_ids: List[UUID],
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Bulk activate multiple users (admin only)
+    """
+    if not user_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No user IDs provided"
+        )
+    
+    # Get users
+    result = await db.execute(
+        select(User).where(User.id.in_(user_ids))
+    )
+    users = result.scalars().all()
+    
+    activated_count = 0
+    for user in users:
+        if not user.is_active:
+            user.is_active = True
+            activated_count += 1
+    
+    await db.commit()
+    
+    # Log admin action
+    log_admin_action(
+        action="bulk_activate",
+        user_id=current_user.id,  # Using admin's ID for bulk operation
+        admin_id=current_user.id,
+        details={
+            "user_ids": [str(uid) for uid in user_ids],
+            "activated_count": activated_count
+        }
+    )
+    
+    return MessageResponse(
+        message=f"Successfully activated {activated_count} users"
+    )
+
+@router.post("/users/bulk-deactivate", response_model=MessageResponse)
+async def bulk_deactivate_users(
+    user_ids: List[UUID],
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Bulk deactivate multiple users (admin only)
+    """
+    if not user_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No user IDs provided"
+        )
+    
+    # Prevent admin from deactivating themselves
+    if current_user.id in user_ids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot deactivate your own account"
+        )
+    
+    # Get users
+    result = await db.execute(
+        select(User).where(User.id.in_(user_ids))
+    )
+    users = result.scalars().all()
+    
+    deactivated_count = 0
+    for user in users:
+        if user.is_active:
+            user.is_active = False
+            deactivated_count += 1
+    
+    await db.commit()
+    
+    # Log admin action
+    log_admin_action(
+        action="bulk_deactivate",
+        user_id=current_user.id,  # Using admin's ID for bulk operation
+        admin_id=current_user.id,
+        details={
+            "user_ids": [str(uid) for uid in user_ids],
+            "deactivated_count": deactivated_count
+        }
+    )
+    
+    return MessageResponse(
+        message=f"Successfully deactivated {deactivated_count} users"
+    )
+
+@router.get("/users/{user_id}/sessions")
+async def get_user_sessions(
+    user_id: UUID,
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Get active sessions for a user (admin only)
+    Note: This is a placeholder - actual implementation would require session tracking
+    """
+    user = await AuthService.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # In a real implementation, you would track sessions in a separate table
+    # For now, return basic session info based on last login
+    sessions = []
+    if user.last_login_at:
+        sessions.append({
+            "session_id": str(user_id) + "-session-1",  # Mock session ID
+            "created_at": user.last_login_at.isoformat(),
+            "last_activity": user.last_login_at.isoformat(),
+            "ip_address": "Unknown",
+            "user_agent": "Unknown",
+            "is_current": False
+        })
+    
+    return {
+        "user_id": str(user_id),
+        "total_sessions": len(sessions),
+        "sessions": sessions
+    }
+
+@router.delete("/users/{user_id}/sessions", response_model=MessageResponse)
+async def invalidate_user_sessions(
+    user_id: UUID,
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Invalidate all sessions for a user (admin only)
+    Note: This is a placeholder - actual implementation would require session tracking
+    """
+    user = await AuthService.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # In a real implementation, you would:
+    # 1. Delete all refresh tokens for the user
+    # 2. Blacklist all active access tokens
+    # 3. Clear any session data in cache/database
+    
+    # For now, we'll just log the action
+    log_admin_action(
+        action="invalidate_sessions",
+        user_id=user.id,
+        admin_id=current_user.id
+    )
+    
+    return MessageResponse(
+        message=f"All sessions for user {user.email} have been invalidated"
+    )

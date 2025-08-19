@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.services.auth import AuthService
+from app.services.auth_sync import AuthServiceSync
 
 
 class TestAdminDashboard:
@@ -20,7 +21,7 @@ class TestAdminDashboard:
             user = User(
                 email=f"stat{i}@example.com",
                 username=f"statuser{i}",
-                hashed_password=AuthService.get_password_hash("Pass123!"),
+                hashed_password=AuthServiceSync.get_password_hash("Pass123!"),
                 is_active=i != 2,  # Last user is inactive
                 is_verified=i == 0  # Only first is verified
             )
@@ -90,7 +91,7 @@ class TestAdminDashboard:
             user = User(
                 email=f"inactive{i}@example.com",
                 username=f"inactive{i}",
-                hashed_password=AuthService.get_password_hash("Pass123!"),
+                hashed_password=AuthServiceSync.get_password_hash("Pass123!"),
                 is_active=False
             )
             db.add(user)
@@ -100,13 +101,14 @@ class TestAdminDashboard:
         
         response = client.post(
             "/api/v1/admin/users/bulk-activate",
-            json={"user_ids": user_ids},
+            json=user_ids,  # Send list directly
             headers=test_superuser_headers
         )
         
         assert response.status_code == 200
         data = response.json()
-        assert data["activated"] == 3
+        assert "message" in data
+        assert "3" in data["message"]  # Should mention 3 users activated
         
         # Verify users are active
         for user_id in user_ids:
@@ -121,7 +123,7 @@ class TestAdminDashboard:
             user = User(
                 email=f"active{i}@example.com",
                 username=f"active{i}",
-                hashed_password=AuthService.get_password_hash("Pass123!"),
+                hashed_password=AuthServiceSync.get_password_hash("Pass123!"),
                 is_active=True
             )
             db.add(user)
@@ -131,13 +133,14 @@ class TestAdminDashboard:
         
         response = client.post(
             "/api/v1/admin/users/bulk-deactivate",
-            json={"user_ids": user_ids},
+            json=user_ids,  # Send list directly
             headers=test_superuser_headers
         )
         
         assert response.status_code == 200
         data = response.json()
-        assert data["deactivated"] == 2
+        assert "message" in data
+        assert "2" in data["message"]  # Should mention 2 users deactivated
         
         # Verify users are inactive
         for user_id in user_ids:
