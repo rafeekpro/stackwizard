@@ -197,6 +197,84 @@ async def verify_email(
     
     return MessageResponse(message="Email verified successfully")
 
+# Admin endpoints for user management
+@router.put("/{user_id}", response_model=UserSchema)
+async def update_user_by_admin(
+    user_id: UUID,
+    user_update: UserUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Update user by ID (admin only)
+    """
+    # Check if current user is admin
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+    
+    # Get user to update
+    result = await db.execute(select(User).where(User.id == user_id))
+    user_to_update = result.scalar_one_or_none()
+    
+    if not user_to_update:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Update user fields
+    update_data = user_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(user_to_update, field, value)
+    
+    user_to_update.updated_at = datetime.utcnow()
+    await db.commit()
+    await db.refresh(user_to_update)
+    
+    return UserSchema.from_orm(user_to_update)
+
+@router.delete("/{user_id}", response_model=MessageResponse)
+async def delete_user_by_admin(
+    user_id: UUID,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Delete user by ID (admin only)
+    """
+    # Check if current user is admin
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+    
+    # Prevent deleting yourself
+    if str(current_user.id) == str(user_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete your own account"
+        )
+    
+    # Get user to delete
+    result = await db.execute(select(User).where(User.id == user_id))
+    user_to_delete = result.scalar_one_or_none()
+    
+    if not user_to_delete:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Delete user
+    await db.delete(user_to_delete)
+    await db.commit()
+    
+    return MessageResponse(message="User deleted successfully")
+
 @router.post("/resend-verification", response_model=MessageResponse)
 async def resend_verification_email(
     current_user: User = Depends(get_current_active_user),

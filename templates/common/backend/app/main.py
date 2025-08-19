@@ -59,3 +59,10 @@ def health_check():
         "service": "stackwizard-backend",
         "version": settings.VERSION
     }
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    """Return empty favicon to prevent 404 errors"""
+    from fastapi.responses import Response
+    return Response(content="", media_type="image/x-icon")

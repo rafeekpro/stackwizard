@@ -103,8 +103,16 @@ class UserLogin(BaseModel):
 class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
-    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    username: Optional[str] = Field(None, max_length=50)
     full_name: Optional[str] = Field(None, max_length=255)
+    
+    @validator('username', pre=True)
+    def empty_str_to_none(cls, v):
+        if v == '':
+            return None
+        if v and len(v) < 3:
+            raise ValueError('Username must be at least 3 characters long')
+        return v
     
     @validator('password')
     def validate_password(cls, v):

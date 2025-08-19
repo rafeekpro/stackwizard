@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
+from uuid import UUID
 
 class ItemBase(BaseModel):
     title: str
@@ -19,7 +20,7 @@ class ItemUpdate(BaseModel):
 
 class ItemInDBBase(ItemBase):
     id: int
-    owner_id: int
+    owner_id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
     

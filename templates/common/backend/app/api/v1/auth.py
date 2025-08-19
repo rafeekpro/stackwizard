@@ -157,10 +157,13 @@ async def register(
     hashed_password = AuthService.get_password_hash(user_data.password)
     email_verification_token = AuthService.create_email_verification_token()
     
+    # Generate username from email if not provided
+    username = user_data.username or user_data.email.split('@')[0]
+    
     db_user = User(
         email=user_data.email,
         hashed_password=hashed_password,
-        username=user_data.username,
+        username=username,
         full_name=user_data.full_name,
         email_verification_token=email_verification_token,
         is_active=True,
