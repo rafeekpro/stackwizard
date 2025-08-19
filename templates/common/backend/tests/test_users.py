@@ -318,16 +318,24 @@ class TestPasswordRecovery:
         assert response.status_code == 200
         assert "Password recovery email sent" in response.json()["message"]
     
-    def test_reset_password_with_token(self, client: TestClient, test_user: User):
+    def test_reset_password_with_token(self, client: TestClient, test_user: User, db: Session):
         """Test resetting password with valid token"""
-        # In real implementation, this would be a token from email
-        # For testing, we'll create a valid token
-        reset_token = AuthService.create_password_reset_token()
+        # First request password reset to get a token
+        response = client.post(
+            "/api/v1/auth/password-recovery",
+            json={"email": test_user.email}
+        )
+        assert response.status_code == 200
         
+        # Get the token from the database (in real scenario, this would come from email)
+        db.refresh(test_user)
+        reset_token = test_user.password_reset_token
+        assert reset_token is not None
+        
+        # Now reset the password using the token
         response = client.post(
             "/api/v1/auth/reset-password",
             json={
-                "email": test_user.email,
                 "token": reset_token,
                 "new_password": "ResetPass123!"
             }
