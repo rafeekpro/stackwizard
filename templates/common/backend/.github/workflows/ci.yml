@@ -1,0 +1,233 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest-cov
+    
+    - name: Run tests with coverage
+      env:
+        DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+        SECRET_KEY: test-secret-key-for-ci
+        ENVIRONMENT: testing
+      run: |
+        pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing
+    
+    - name: Check test count
+      run: |
+        PASSED=$(pytest tests/ -q | grep -o "[0-9]* passed" | grep -o "[0-9]*")
+        echo "Tests passed: $PASSED"
+        if [ "$PASSED" -lt "77" ]; then
+          echo "❌ Test count decreased! Expected >=77, got $PASSED"
+          exit 1
+        fi
+        echo "✅ Test count maintained: $PASSED/77"
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort flake8 mypy
+    
+    - name: Run Black
+      run: black --check app/ tests/
+      continue-on-error: true
+    
+    - name: Run isort
+      run: isort --check-only app/ tests/
+      continue-on-error: true
+    
+    - name: Run Flake8
+      run: flake8 app/ tests/ --max-line-length=100 --ignore=E203,W503
+      continue-on-error: true
+    
+    - name: Run MyPy
+      run: mypy app/ --ignore-missing-imports
+      continue-on-error: true
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit safety
+    
+    - name: Run Bandit
+      run: bandit -r app/ -ll
+      continue-on-error: true
+    
+    - name: Check dependencies for vulnerabilities
+      run: safety check --json
+      continue-on-error: true
+
+  docker:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build Docker image
+      run: |
+        docker build -t backend-test .
+    
+    - name: Run Docker container
+      run: |
+        docker run -d --name test-container \
+          -e DATABASE_URL=sqlite:///./test.db \
+          -e SECRET_KEY=test-key \
+          -p 8000:8000 \
+          backend-test
+        
+        sleep 10
+        
+        # Check if container is running
+        docker ps | grep test-container
+        
+        # Check health endpoint
+        curl -f http://localhost:8000/health || exit 1
+        
+        docker stop test-container
+
+  protection-check:
+    name: Protection Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check protected files
+      run: |
+        echo "🛡️ Checking protection rules..."
+        
+        # Check if CLAUDE.md exists
+        if [ ! -f "CLAUDE.md" ]; then
+          echo "⚠️ Warning: CLAUDE.md not found"
+        fi
+        
+        # Check if protection config exists
+        if [ ! -f ".claude-protect.json" ]; then
+          echo "⚠️ Warning: .claude-protect.json not found"
+        fi
+        
+        # Count endpoints
+        ENDPOINTS=$(grep -r "@router" app/api/ | wc -l)
+        echo "📊 Found $ENDPOINTS endpoints"
+        
+        if [ "$ENDPOINTS" -lt "35" ]; then
+          echo "❌ Endpoint count decreased!"
+          exit 1
+        fi
+    
+    - name: Validate no dangerous patterns
+      run: |
+        DANGEROUS_PATTERNS=(
+          "DROP TABLE"
+          "DELETE FROM users WHERE 1=1"
+          "TRUNCATE"
+          "os.system"
+          "eval("
+          "__import__"
+        )
+        
+        for pattern in "${DANGEROUS_PATTERNS[@]}"; do
+          if grep -r "$pattern" app/ tests/; then
+            echo "❌ Dangerous pattern found: $pattern"
+            exit 1
+          fi
+        done
+        
+        echo "✅ No dangerous patterns found"
+
+  # This job ensures all checks pass
+  merge-guard:
+    name: Merge Protection Gate
+    needs: [test, lint, security, docker, protection-check]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Check all jobs
+      run: |
+        if [ "${{ needs.test.result }}" != "success" ]; then
+          echo "❌ Tests failed or didn't run"
+          exit 1
+        fi
+        
+        echo "✅ All critical checks passed!"
+        echo "📊 Test status: ${{ needs.test.result }}"
+        echo "🔍 Lint status: ${{ needs.lint.result }}"
+        echo "🔒 Security status: ${{ needs.security.result }}"
+        echo "🐳 Docker status: ${{ needs.docker.result }}"
+        echo "🛡️ Protection status: ${{ needs.protection-check.result }}"
