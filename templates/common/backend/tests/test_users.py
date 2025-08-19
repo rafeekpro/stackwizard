@@ -58,9 +58,11 @@ class TestUserEndpoints:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["full_name"] == "Updated Name"
-        assert data["username"] == "updatedusername"
-        assert data["email"] == test_user.email  # Email unchanged
+        assert "user" in data
+        user_data = data["user"]
+        assert user_data["full_name"] == "Updated Name"
+        assert user_data["username"] == "updatedusername"
+        assert user_data["email"] == test_user.email  # Email unchanged
     
     def test_update_current_user_duplicate_email(
         self, client: TestClient, test_user: User, test_superuser: User, test_headers: dict
@@ -126,7 +128,7 @@ class TestUserEndpoints:
         response = client.delete("/api/v1/users/me", headers=test_headers)
         
         assert response.status_code == 200
-        assert "deleted successfully" in response.json()["message"].lower()
+        assert "deactivated successfully" in response.json()["message"].lower()
         
         # User should be soft-deleted (is_active = False)
         # Try to login again
@@ -283,10 +285,13 @@ class TestAdminUserEndpoints:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["email"] == "adminCreated@example.com"
-        assert data["username"] == "admincreated"
-        assert data["is_verified"] is True
-        assert data["is_superuser"] is False
+        assert "user" in data
+        assert "message" in data
+        user_data = data["user"]
+        assert user_data["email"] == "adminCreated@example.com"
+        assert user_data["username"] == "admincreated"
+        assert user_data["is_verified"] is True
+        assert user_data["is_superuser"] is False
 
 
 class TestPasswordRecovery:
