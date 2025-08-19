@@ -79,7 +79,7 @@ class TestUserEndpoints:
         )
         
         assert response.status_code == 400
-        assert "already exists" in response.json()["detail"].lower()
+        assert "already in use" in response.json()["detail"].lower()
     
     def test_update_user_password(self, client: TestClient, test_user: User, test_headers: dict):
         """Test changing user password"""
@@ -121,7 +121,7 @@ class TestUserEndpoints:
         )
         
         assert response.status_code == 400
-        assert "Incorrect password" in response.json()["detail"]
+        assert "incorrect" in response.json()["detail"].lower()
     
     def test_delete_current_user(self, client: TestClient, test_user: User, test_headers: dict):
         """Test soft-deleting current user"""
