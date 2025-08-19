@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, and_, desc
+from pydantic import BaseModel
 
 from app.core.dependencies import get_current_superuser, get_async_db
 from app.models.user import User
@@ -17,6 +18,9 @@ from app.schemas.user import (
     MessageResponse
 )
 from app.services.auth import AuthService, SecurityService
+
+class PasswordResetAdmin(BaseModel):
+    new_password: str
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -502,7 +506,7 @@ def log_admin_action(
 @router.post("/users/{user_id}/reset-password", response_model=MessageResponse)
 async def reset_user_password_admin(
     user_id: UUID,
-    new_password: str = Query(..., min_length=8, max_length=128, description="New password for the user"),
+    password_data: PasswordResetAdmin,
     current_user: User = Depends(get_current_superuser),
     db: AsyncSession = Depends(get_async_db)
 ) -> Any:
@@ -517,7 +521,7 @@ async def reset_user_password_admin(
         )
     
     # Validate password strength
-    is_valid, errors = SecurityService.validate_password_strength(new_password)
+    is_valid, errors = SecurityService.validate_password_strength(password_data.new_password)
     if not is_valid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -525,7 +529,7 @@ async def reset_user_password_admin(
         )
     
     # Reset password
-    user.hashed_password = AuthService.get_password_hash(new_password)
+    user.hashed_password = AuthService.get_password_hash(password_data.new_password)
     user.password_reset_token = None
     user.password_reset_at = None
     
@@ -540,7 +544,7 @@ async def reset_user_password_admin(
     
     return MessageResponse(message="Password reset successfully")
 
-@router.get("/users/export")
+@router.get("/users/export", response_model=None)
 async def export_users(
     format: str = Query("csv", description="Export format: csv or json"),
     current_user: User = Depends(get_current_superuser),
@@ -577,7 +581,6 @@ async def export_users(
         # Return CSV format
         import csv
         import io
-        from fastapi.responses import Response
         
         output = io.StringIO()
         writer = csv.writer(output)
