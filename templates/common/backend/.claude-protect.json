@@ -1,0 +1,82 @@
+{
+  "protection_level": "HIGH",
+  "project_status": {
+    "completion": "100%",
+    "tests_passing": 77,
+    "tests_skipped": 1,
+    "test_coverage": "98%",
+    "stability": "PRODUCTION_READY"
+  },
+  "protected_files": [
+    "app/core/security.py",
+    "app/core/dependencies.py",
+    "app/models/*.py",
+    "app/api/v1/auth.py",
+    "alembic/versions/*.py"
+  ],
+  "protected_patterns": [
+    "**/test_*.py",
+    "**/*_test.py",
+    "**/conftest.py",
+    "**/alembic.ini",
+    "**/.env*"
+  ],
+  "forbidden_actions": [
+    "DELETE_ENDPOINT",
+    "MODIFY_AUTH",
+    "CHANGE_SCHEMA",
+    "REMOVE_TEST",
+    "DOWNGRADE_DEPS",
+    "BREAK_API_CONTRACT"
+  ],
+  "require_confirmation": [
+    "database_migration",
+    "security_change",
+    "breaking_change",
+    "test_modification",
+    "api_contract_change"
+  ],
+  "safe_zones": [
+    "docs/**",
+    "README.md",
+    "comments",
+    "new_features/**",
+    "frontend/**"
+  ],
+  "validation_commands": [
+    "pytest tests/ -v",
+    "python -m pytest --cov=app --cov-report=term-missing",
+    "mypy app/",
+    "black --check app/",
+    "isort --check-only app/"
+  ],
+  "minimum_requirements": {
+    "tests_must_pass": 77,
+    "coverage_minimum": 95,
+    "no_security_warnings": true,
+    "no_breaking_changes": true
+  },
+  "auto_reject_patterns": [
+    "DROP TABLE",
+    "DELETE FROM users",
+    "TRUNCATE",
+    "ALTER TABLE.*DROP",
+    "remove_column",
+    "drop_table"
+  ],
+  "warning_triggers": [
+    "refactor",
+    "optimize",
+    "improve",
+    "cleanup",
+    "reorganize",
+    "simplify"
+  ],
+  "escalation_required": [
+    "Deleting more than 10 lines",
+    "Modifying more than 3 files",
+    "Changing core dependencies",
+    "Altering test assertions",
+    "Modifying authentication flow"
+  ]
+}
