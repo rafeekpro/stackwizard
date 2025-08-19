@@ -167,12 +167,12 @@ jobs:
     
     - name: Generate test project with MUI
       run: |
-        echo -e "test-project-mui\n1\nlocalhost\n5432\ntestdb\ntestuser\ntestpass\n8000\n3000\n" | timeout 30s npm start || true
+        ./test-generate.sh test-project-mui 1
         ls -la test-project-mui/
     
     - name: Generate test project with Tailwind
       run: |
-        echo -e "test-project-tailwind\n2\nlocalhost\n5432\ntestdb\ntestuser\ntestpass\n8000\n3001\n" | timeout 30s npm start || true
+        ./test-generate.sh test-project-tailwind 2
         ls -la test-project-tailwind/
     
     - name: Check generated project structure
