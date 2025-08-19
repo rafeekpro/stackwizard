@@ -1,23 +1,27 @@
-from typing import Any, List
+from typing import Any, List, Optional
 from uuid import UUID
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_
 
 from app.core.dependencies import (
     get_current_active_user,
     get_current_verified_user,
+    get_current_superuser,
     get_async_db
 )
 from app.models.user import User
 from app.schemas.user import (
     User as UserSchema,
+    UserCreate,
     UserUpdate,
     UserPasswordUpdate,
     UserResponse,
-    MessageResponse
+    MessageResponse,
+    AdminUserUpdate,
+    AdminUserCreate
 )
 from app.services.auth import AuthService, SecurityService
 
@@ -143,7 +147,7 @@ async def update_current_user_password(
 
 @router.delete("/me", response_model=MessageResponse)
 async def deactivate_current_user(
-    current_user: User = Depends(get_current_verified_user),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_async_db)
 ) -> Any:
     """
@@ -198,10 +202,125 @@ async def verify_email(
     return MessageResponse(message="Email verified successfully")
 
 # Admin endpoints for user management
+@router.get("/", response_model=List[UserSchema])
+async def get_all_users(
+    skip: int = Query(0, ge=0, description="Number of users to skip"),
+    limit: int = Query(100, ge=1, le=1000, description="Number of users to return"),
+    search: Optional[str] = Query(None, description="Search in email, username, or full_name"),
+    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Get all users (admin only)
+    """
+    # Build query with filters
+    query = select(User)
+    
+    # Search filter
+    if search:
+        search_filter = or_(
+            User.email.ilike(f"%{search}%"),
+            User.username.ilike(f"%{search}%"),
+            User.full_name.ilike(f"%{search}%")
+        )
+        query = query.where(search_filter)
+    
+    # Status filter
+    if is_active is not None:
+        query = query.where(User.is_active == is_active)
+    
+    # Apply pagination
+    query = query.offset(skip).limit(limit).order_by(User.created_at.desc())
+    
+    result = await db.execute(query)
+    users = result.scalars().all()
+    
+    return [UserSchema.from_orm(user) for user in users]
+
+@router.get("/{user_id}", response_model=UserSchema)
+async def get_user_by_id(
+    user_id: UUID,
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Get user by ID (admin only)
+    """
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    return UserSchema.from_orm(user)
+
+@router.post("/", response_model=UserResponse)
+async def create_user_by_admin(
+    user_data: AdminUserCreate,
+    current_user: User = Depends(get_current_superuser),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Create new user (admin only)
+    """
+    # Check if user already exists
+    existing_user = await AuthService.get_user_by_email(db, user_data.email)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email already exists"
+        )
+    
+    # Check if username is taken (if provided)
+    if user_data.username:
+        result = await db.execute(
+            select(User).where(User.username == user_data.username)
+        )
+        if result.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken"
+            )
+    
+    # Validate password strength
+    is_valid, errors = SecurityService.validate_password_strength(user_data.password)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": "Password does not meet requirements", "errors": errors}
+        )
+    
+    # Create new user
+    hashed_password = AuthService.get_password_hash(user_data.password)
+    
+    db_user = User(
+        email=user_data.email,
+        hashed_password=hashed_password,
+        username=user_data.username,
+        full_name=user_data.full_name,
+        is_active=user_data.is_active,
+        is_verified=user_data.is_verified,
+        is_superuser=user_data.is_superuser,
+        email_verification_token=None if user_data.is_verified else AuthService.create_email_verification_token()
+    )
+    
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
+    
+    return UserResponse(
+        user=UserSchema.from_orm(db_user),
+        message="User created successfully"
+    )
+
 @router.put("/{user_id}", response_model=UserSchema)
 async def update_user_by_admin(
     user_id: UUID,
-    user_update: UserUpdate,
+    user_update: AdminUserUpdate,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_async_db)
 ) -> Any:
@@ -269,8 +388,8 @@ async def delete_user_by_admin(
             detail="User not found"
         )
     
-    # Delete user
-    await db.delete(user_to_delete)
+    # Soft delete user (deactivate)
+    user_to_delete.is_active = False
     await db.commit()
     
     return MessageResponse(message="User deleted successfully")
