@@ -1,208 +1,242 @@
-# 🧙‍♂️ StackWizard
+# 🧙‍♂️ StackWizard CLI
 
-**Magical Full-Stack Project Generator with Configurable UI**
+> Magical full-stack project generator with FastAPI, React, PostgreSQL, and Docker
 
-An interactive command-line tool (CLI) that generates complete full-stack application boilerplates with FastAPI, React, PostgreSQL, and Docker Compose.
+[![npm version](https://img.shields.io/npm/v/stackwizard-cli.svg)](https://www.npmjs.com/package/stackwizard-cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Create production-ready full-stack applications with a single command! StackWizard generates a complete project structure with FastAPI backend, React frontend (Material-UI or Tailwind CSS), PostgreSQL database, and Docker Compose configuration.
 
 ## ✨ Features
 
-- **🪄 Interactive CLI**: User-friendly interface with step-by-step configuration
-- **🎨 Configurable Frontend**: Choose between Material UI or Tailwind CSS
-- **⚡ Complete Backend**: FastAPI with SQLAlchemy, Pydantic, and auto-documentation
-- **🐳 Containerization**: Ready-to-use Docker Compose configuration
-- **📝 CRUD Examples**: User and item management ready to use
-- **📱 Responsive Design**: Mobile-first UI in both variants
+- **🚀 FastAPI Backend** - Modern Python web API with async support
+- **⚛️ React Frontend** - Choice of Material-UI or Tailwind CSS
+- **🐘 PostgreSQL Database** - Production-ready database with migrations
+- **🐳 Docker Compose** - Complete containerized development environment
+- **🔐 Authentication** - JWT-based auth system built-in
+- **📚 API Documentation** - Auto-generated Swagger/OpenAPI docs
+- **🧪 Testing** - Pre-configured test suites for both backend and frontend
+- **🎨 UI Libraries** - Choose between Material-UI or Tailwind CSS
 
-## 🏗️ Generated Project Structure
+## 📦 Installation
 
+### Using npx (recommended)
+
+No installation needed! Just run:
+
+```bash
+npx stackwizard-cli
 ```
-your-project/
-├── backend/          # FastAPI backend
-│   ├── app/
-│   │   ├── api/      # REST API endpoints
-│   │   ├── models/   # SQLAlchemy models
-│   │   ├── schemas/  # Pydantic schemas
-│   │   └── crud/     # Database operations
-│   └── Dockerfile
-├── frontend/         # React frontend (Material UI or Tailwind)
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   └── services/
-│   └── Dockerfile
-├── database/         # PostgreSQL initialization
-├── docker-compose.yml
-└── .env
+
+### Global Installation
+
+```bash
+npm install -g stackwizard-cli
+```
+
+Then run:
+
+```bash
+stackwizard
 ```
 
 ## 🚀 Quick Start
 
-### Installation and Usage
+### Interactive Mode (Recommended)
 
 ```bash
-# Clone or download the generator code
-cd project-generator-cli
-
-# Install dependencies
-npm install
-
-# Run the generator
-npm start
-
-# Or install globally
-npm install -g .
-stackwizard
+npx stackwizard-cli
 ```
 
-### Using the Generated Project
+Follow the interactive prompts to configure your project:
+- Project name
+- UI library (Material-UI or Tailwind CSS)
+- Database configuration
+- Port settings
+- Additional features (Git, dependencies installation, etc.)
+
+### Command Line Mode
 
 ```bash
-# Navigate to your generated project
-cd your-project-name
+npx stackwizard-cli --name my-app --ui mui
+```
 
-# Start all services
+### Available Options
+
+```bash
+Options:
+  -V, --version     output the version number
+  -n, --name <name> project name
+  -u, --ui <ui>     UI library (mui or tailwind)
+  -s, --skip-git    skip git initialization
+  -i, --install     install dependencies after creation
+  -h, --help        display help for command
+```
+
+## 📁 Generated Project Structure
+
+```
+your-project/
+├── backend/              # FastAPI backend
+│   ├── app/
+│   │   ├── api/         # API endpoints
+│   │   ├── core/        # Core configuration
+│   │   ├── crud/        # Database operations
+│   │   ├── models/      # SQLAlchemy models
+│   │   ├── schemas/     # Pydantic schemas
+│   │   └── main.py      # Application entry point
+│   ├── tests/           # Backend tests
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/            # React frontend
+│   ├── src/
+│   │   ├── components/  # React components
+│   │   ├── pages/       # Page components
+│   │   ├── services/    # API services
+│   │   ├── context/     # React context
+│   │   └── App.js       # Main app component
+│   ├── public/
+│   ├── package.json
+│   └── Dockerfile
+├── database/            # Database initialization
+│   └── init.sql
+├── docker-compose.yml   # Container orchestration
+├── .env                 # Environment variables
+└── README.md           # Project documentation
+```
+
+## 🎯 Features in Generated Projects
+
+### Backend (FastAPI)
+- ✅ RESTful API with async/await
+- ✅ SQLAlchemy ORM with Alembic migrations
+- ✅ JWT authentication
+- ✅ CORS configuration
+- ✅ Pydantic validation
+- ✅ Auto-generated API documentation
+- ✅ Health check endpoints
+- ✅ 100% test coverage setup
+
+### Frontend (React)
+- ✅ Modern React with hooks
+- ✅ React Router for navigation
+- ✅ Axios for API calls with interceptors
+- ✅ Authentication context
+- ✅ Protected routes
+- ✅ Responsive design
+- ✅ Material-UI or Tailwind CSS styling
+
+### Database (PostgreSQL)
+- ✅ PostgreSQL 15
+- ✅ Database migrations
+- ✅ Connection pooling
+- ✅ Automated initialization
+
+### DevOps (Docker)
+- ✅ Multi-stage Dockerfiles
+- ✅ Docker Compose for local development
+- ✅ Hot-reload for development
+- ✅ Environment variable configuration
+
+## 🛠️ Development Workflow
+
+After generating your project:
+
+### 1. Start with Docker Compose
+
+```bash
+cd your-project
 docker-compose up -d
-
-# Open in browser
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000
-# API Docs: http://localhost:8000/docs
 ```
 
-## 🎯 Available UI Options
+This starts:
+- Backend API at http://localhost:8000
+- Frontend at http://localhost:3000
+- PostgreSQL database at localhost:5432
+- API docs at http://localhost:8000/docs
 
-### 🎨 Material UI
-- Professional Material Design components
-- Rich component ecosystem
-- Built-in icons and theming
-- Perfect for business applications
+### 2. Development without Docker
 
-### 🎯 Tailwind CSS  
-- Utility-first CSS framework
-- Headless UI for accessibility
-- Heroicons for icons
-- Maximum styling flexibility
-
-## 📚 Technology Stack
-
-### Backend
-- **FastAPI**: Modern, fast web framework
-- **SQLAlchemy**: Advanced Python ORM
-- **PostgreSQL**: Powerful relational database
-- **Pydantic**: Data validation and serialization
-- **Uvicorn**: High-performance ASGI server
-
-### Frontend
-- **React 18**: Modern UI library
-- **React Router v6**: SPA routing
-- **Axios**: HTTP client for API calls
-- **Material UI v5** or **Tailwind CSS v3**: UI styling
-
-### DevOps
-- **Docker & Docker Compose**: Containerization
-- **PostgreSQL 15**: Containerized database
-- **Hot Reload**: Automatic reloading during development
-
-## 🔧 Development Commands
-
-### Backend (Local)
+#### Backend
 ```bash
 cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend (Local)
+#### Frontend
 ```bash
 cd frontend
 npm install
 npm start
 ```
 
-### Docker (Recommended)
+## 🧪 Testing
+
+### Backend Tests
 ```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-
-# Rebuild containers
-docker-compose up -d --build
+cd backend
+pytest tests/ -v --cov=app
 ```
 
-## 📋 Example API Endpoints
+### Frontend Tests
+```bash
+cd frontend
+npm test
+```
 
-The generated backend includes these endpoints:
+## 📝 Environment Variables
 
-- `GET /api/health` - Application status
-- `GET /api/health/db` - Database status
-- `GET /api/users` - List users
-- `POST /api/users` - Create user
-- `GET /api/items` - List items  
-- `POST /api/items` - Create item
-- `GET /docs` - Interactive API documentation
-
-## 🎨 UI Examples
-
-### Material UI
-- Navigation with AppBar and Menu
-- Tables with DataGrid
-- Modal dialogs for forms
-- Cards for displaying items
-- Snackbar for notifications
-
-### Tailwind CSS
-- Responsive navigation
-- Grid layouts for cards
-- Modals with Headless UI
-- Utility classes for styling
-- Hover and focus states
-
-## 🔐 Environment Configuration
-
-The generator automatically creates `.env` files with configuration:
+Generated projects include a `.env` file with:
 
 ```env
 # Database
-DB_NAME=your_project
+DB_NAME=your_database
 DB_USER=postgres
 DB_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
 
-# API
+# Backend
 API_PORT=8000
 SECRET_KEY=your-secret-key
 
-# Frontend  
+# Frontend
 FRONTEND_PORT=3000
 REACT_APP_API_URL=http://localhost:8000
 ```
 
-## 📖 Additional Resources
-
-- **FastAPI Documentation**: https://fastapi.tiangolo.com/
-- **React Documentation**: https://react.dev/
-- **Material UI**: https://mui.com/
-- **Tailwind CSS**: https://tailwindcss.com/
-- **Docker Compose**: https://docs.docker.com/compose/
-
 ## 🤝 Contributing
 
-To add new features or fix bugs:
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
-2. Create a feature branch
-3. Implement changes
-4. Add tests if possible
-5. Submit a Pull Request
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- FastAPI for the amazing Python web framework
+- React team for the fantastic frontend library
+- Docker for containerization
+- All contributors and users of StackWizard
+
+## 📞 Support
+
+- 📧 Email: support@stackwizard.dev
+- 🐛 Issues: [GitHub Issues](https://github.com/rafeekpro/stackwizard/issues)
+- 📖 Docs: [Documentation](https://github.com/rafeekpro/stackwizard/wiki)
 
 ---
 
-**[🇵🇱 Polish README](README_PL.md)** | **[📚 Developer Guide](CLAUDE.md)**
+Made with ❤️ by the StackWizard Team
+
+**Happy coding! 🎉**
