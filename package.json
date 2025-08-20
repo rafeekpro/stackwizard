@@ -20,7 +20,7 @@
     "lint": "eslint src/ --ext .js",
     "format": "prettier --write 'src/**/*.js'",
     "format:check": "prettier --check 'src/**/*.js'",
-    "prepublishOnly": "npm run format:check && npm run lint"
+    "prepublishOnly": "npm run lint && npm run format:check"
   },
   "keywords": [
     "generator",
@@ -68,6 +68,9 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "publishConfigGitHub": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "dependencies": {
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
@@ -75,5 +78,9 @@
     "inquirer": "^9.2.12",
     "ora": "^7.0.1"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "eslint": "^9.33.0",
+    "prettier": "^3.6.2"
+  }
 }
