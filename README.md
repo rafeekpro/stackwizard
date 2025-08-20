@@ -63,6 +63,8 @@ npm config set @rafeekpro:registry https://npm.pkg.github.com
 npm install -g @rafeekpro/stackwizard
 ```
 
+> **Note**: Both NPM and GitHub Packages are now live with version 1.0.0!
+
 ## 📋 Usage
 
 ### Interactive Mode (Recommended)
@@ -233,31 +235,48 @@ alembic upgrade head
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](https://github.com/rafeekpro/stackwizard/blob/main/CONTRIBUTING.md) for details.
+Contributions are welcome! Feel free to:
+- Report bugs and request features via [GitHub Issues](https://github.com/rafeekpro/stackwizard/issues)
+- Submit pull requests with improvements
+- Share feedback and suggestions
 
 ## 📄 License
 
-MIT © [StackWizard Team](https://github.com/rafeekpro/stackwizard)
+MIT © [Rafał Łagowski](https://github.com/rafeekpro)
 
-## 🙏 Acknowledgments
+## 👨‍💻 Author
 
-Built with love using:
-- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
-- [React](https://reactjs.org/) - UI library for building user interfaces
-- [PostgreSQL](https://www.postgresql.org/) - Advanced open-source database
-- [Docker](https://www.docker.com/) - Containerization platform
+**Rafał Łagowski** - Full-Stack Developer
+- GitHub: [@rafeekpro](https://github.com/rafeekpro)
+- NPM: [@rafeekpro](https://www.npmjs.com/~rafeekpro)
 
-## 📞 Support
+## 🙏 Technologies Used
 
-- 📧 **Email**: support@stackwizard.dev  
-- 🐛 **Issues**: [GitHub Issues](https://github.com/rafeekpro/stackwizard/issues)
-- 📖 **Documentation**: [GitHub Wiki](https://github.com/rafeekpro/stackwizard/wiki)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/rafeekpro/stackwizard/discussions)
+This project leverages modern, production-ready technologies:
+- [FastAPI](https://fastapi.tiangolo.com/) - High-performance Python web framework
+- [React](https://reactjs.org/) - Component-based UI library
+- [PostgreSQL](https://www.postgresql.org/) - Enterprise-grade database
+- [Docker](https://www.docker.com/) - Container orchestration
+- [SQLAlchemy](https://www.sqlalchemy.org/) - Python SQL toolkit and ORM
+- [Alembic](https://alembic.sqlalchemy.org/) - Database migration tool
+- [Material-UI](https://mui.com/) - React component library
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+
+## 📞 Contact & Support
+
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/rafeekpro/stackwizard/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/rafeekpro/stackwizard/discussions)
 - 📦 **NPM Package**: [@rafeekpro/stackwizard](https://www.npmjs.com/package/@rafeekpro/stackwizard)
+- 📦 **GitHub Package**: [@rafeekpro/stackwizard](https://github.com/users/rafeekpro/packages/npm/package/stackwizard)
+- 👤 **Developer**: [Rafał Łagowski](https://github.com/rafeekpro)
 
 ---
 
 <p align="center">
-  Made with ❤️ by the <a href="https://github.com/rafeekpro">StackWizard Team</a>
+  <strong>Created with ❤️ by <a href="https://github.com/rafeekpro">Rafał Łagowski</a></strong><br>
+  <em>Full-Stack Developer | Open Source Contributor</em><br><br>
+  <a href="https://www.npmjs.com/package/@rafeekpro/stackwizard">NPM</a> • 
+  <a href="https://github.com/rafeekpro/stackwizard">GitHub</a> • 
+  <a href="https://github.com/rafeekpro">Profile</a>
 </p>
 
