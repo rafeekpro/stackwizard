@@ -20,7 +20,7 @@
     "lint": "eslint src/ --ext .js",
     "format": "prettier --write 'src/**/*.js'",
     "format:check": "prettier --check 'src/**/*.js'",
-    "prepublishOnly": "echo 'Skipping format and lint checks for initial publish'"
+    "prepublishOnly": "npm run lint && npm run format:check"
   },
   "keywords": [
     "generator",
