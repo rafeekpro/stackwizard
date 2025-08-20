@@ -1,66 +1,208 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database Service
   db:
     image: postgres:15-alpine
     container_name: {{PROJECT_NAME}}-db
+    restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: {{DB_USER}}
-      POSTGRES_PASSWORD: {{DB_PASSWORD}}
-      POSTGRES_DB: {{DB_NAME}}
+      POSTGRES_USER: ${DB_USER:-{{DB_USER}}}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-{{DB_PASSWORD}}}
+      POSTGRES_DB: ${DB_NAME:-{{DB_NAME}}}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
+      # Persistent data volume
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # Initial SQL scripts
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      # Backup directory
+      - ./backups:/backups
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U {{DB_USER}}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-{{DB_USER}}} -d ${DB_NAME:-{{DB_NAME}}}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+  # FastAPI Backend Service
   backend:
     build: 
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        - ENVIRONMENT=${ENVIRONMENT:-development}
     container_name: {{PROJECT_NAME}}-backend
+    restart: unless-stopped
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://{{DB_USER}}:{{DB_PASSWORD}}@db:5432/{{DB_NAME}}
-      SECRET_KEY: your-secret-key-here-change-in-production
+      # Database connection
+      DATABASE_URL: postgresql://${DB_USER:-{{DB_USER}}}:${DB_PASSWORD:-{{DB_PASSWORD}}}@db:5432/${DB_NAME:-{{DB_NAME}}}
+      # Security
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here-change-in-production}
+      # CORS settings
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-["http://localhost:3000","http://localhost:{{FRONTEND_PORT}}"]}
+      # Environment
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      # Redis (optional)
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
     volumes:
-      - ./backend:/app
+      # Code synchronization for development
+      - ./backend/app:/app/app:delegated
+      # Alembic migrations
+      - ./backend/alembic:/app/alembic:delegated
+      # Persist uploaded files
+      - ./uploads:/app/uploads
     ports:
-      - "{{API_PORT}}:8000"
+      - "${API_PORT:-{{API_PORT}}}:8000"
     networks:
       - app-network
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        while ! nc -z db 5432; do sleep 1; done &&
+        echo 'Database is ready!' &&
+        alembic upgrade head &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+  # React Frontend Service
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV:-development}
     container_name: {{PROJECT_NAME}}-frontend
+    restart: unless-stopped
+    env_file:
+      - .env
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
-      REACT_APP_API_URL: http://localhost:{{API_PORT}}
+      # API configuration
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:{{API_PORT}}}
+      # Environment
+      NODE_ENV: ${NODE_ENV:-development}
+      # Optional features
+      REACT_APP_ENABLE_ANALYTICS: ${REACT_APP_ENABLE_ANALYTICS:-false}
+      REACT_APP_VERSION: ${REACT_APP_VERSION:-1.0.0}
     volumes:
-      - ./frontend:/app
+      # Code synchronization for development
+      - ./frontend/src:/app/src:delegated
+      - ./frontend/public:/app/public:delegated
+      # Prevent node_modules from being overwritten
       - /app/node_modules
     ports:
-      - "{{FRONTEND_PORT}}:3000"
+      - "${FRONTEND_PORT:-{{FRONTEND_PORT}}}:3000"
     networks:
       - app-network
     command: npm start
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Redis Cache Service
+  redis:
+    image: redis:7-alpine
+    container_name: {{PROJECT_NAME}}-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - app-network
+    profiles:
+      - cache
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: {{PROJECT_NAME}}-nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_logs:/var/log/nginx
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    networks:
+      - app-network
+    profiles:
+      - production
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_logs:
+    driver: local
 
 networks:
   app-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
