@@ -2,10 +2,10 @@
 
 > **Create production-ready full-stack applications in seconds!**
 
-[![npm version](https://img.shields.io/npm/v/@[YOUR_NPM_USERNAME]/stackwizard.svg?style=flat-square)](https://www.npmjs.com/package/@[YOUR_NPM_USERNAME]/stackwizard)
-[![npm downloads](https://img.shields.io/npm/dm/@[YOUR_NPM_USERNAME]/stackwizard.svg?style=flat-square)](https://www.npmjs.com/package/@[YOUR_NPM_USERNAME]/stackwizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/node/v/@[YOUR_NPM_USERNAME]/stackwizard.svg?style=flat-square)](https://nodejs.org/en/about/releases/)
+[![Node.js](https://img.shields.io/badge/Node.js-16%2B-brightgreen?style=flat-square)](https://nodejs.org)
+[![GitHub Stars](https://img.shields.io/github/stars/rafeekpro/stackwizard?style=flat-square)](https://github.com/rafeekpro/stackwizard/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/rafeekpro/stackwizard?style=flat-square)](https://github.com/rafeekpro/stackwizard/issues)
 
 **StackWizard** is a powerful CLI tool that generates complete, production-ready full-stack applications with a single command. Get a fully configured project with **FastAPI** backend, **React** frontend, **PostgreSQL** database, and **Docker Compose** orchestration - all following industry best practices.
 
@@ -22,17 +22,32 @@
 
 ## 🚀 Quick Start
 
-No installation needed! Use `npx` to run directly:
+### From GitHub (Current Method)
+
+Clone and run directly:
 
 ```bash
-npx @[YOUR_NPM_USERNAME]/stackwizard my-awesome-app
+# Clone the repository
+git clone https://github.com/rafeekpro/stackwizard.git
+cd stackwizard
+npm install
+
+# Run the generator
+npm start
+# or
+node src/index.js
 ```
 
-Or install globally for frequent use:
+### NPM Installation (Coming Soon)
+
+Once published to NPM, you'll be able to install with:
 
 ```bash
-npm install -g @[YOUR_NPM_USERNAME]/stackwizard
-stackwizard my-awesome-app
+# Global installation
+npm install -g stackwizard-cli
+
+# Or use npx
+npx stackwizard-cli my-awesome-app
 ```
 
 ## 📋 Usage
@@ -42,7 +57,11 @@ stackwizard my-awesome-app
 Simply run the command and follow the interactive prompts:
 
 ```bash
-npx @[YOUR_NPM_USERNAME]/stackwizard
+# From cloned repository
+npm start
+
+# Or after global installation (when published)
+stackwizard
 ```
 
 You'll be asked to configure:
@@ -57,7 +76,7 @@ You'll be asked to configure:
 Skip the prompts with command-line options:
 
 ```bash
-npx @[YOUR_NPM_USERNAME]/stackwizard my-app --ui mui --skip-git
+node src/index.js --name my-app --ui mui --skip-git
 ```
 
 #### Available Options
@@ -78,7 +97,7 @@ Options:
 Generate a project with all defaults in seconds:
 
 ```bash
-npx @[YOUR_NPM_USERNAME]/stackwizard --quick --name my-app
+node src/index.js --quick --name my-app
 ```
 
 ## 🏗️ Generated Project Structure
@@ -225,8 +244,3 @@ Built with love using:
   Made with ❤️ by the <a href="https://github.com/rafeekpro">StackWizard Team</a>
 </p>
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/@[YOUR_NPM_USERNAME]/stackwizard">
-    <img src="https://nodei.co/npm/@[YOUR_NPM_USERNAME]/stackwizard.png?downloads=true&downloadRank=true&stars=true" alt="NPM"/>
-  </a>
-</p>
