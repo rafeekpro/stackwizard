@@ -2,10 +2,11 @@
 
 > **Create production-ready full-stack applications in seconds!**
 
+[![npm version](https://img.shields.io/npm/v/@rafeekpro/stackwizard.svg?style=flat-square)](https://www.npmjs.com/package/@rafeekpro/stackwizard)
+[![npm downloads](https://img.shields.io/npm/dm/@rafeekpro/stackwizard.svg?style=flat-square)](https://www.npmjs.com/package/@rafeekpro/stackwizard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-16%2B-brightgreen?style=flat-square)](https://nodejs.org)
 [![GitHub Stars](https://img.shields.io/github/stars/rafeekpro/stackwizard?style=flat-square)](https://github.com/rafeekpro/stackwizard/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/rafeekpro/stackwizard?style=flat-square)](https://github.com/rafeekpro/stackwizard/issues)
 
 **StackWizard** is a powerful CLI tool that generates complete, production-ready full-stack applications with a single command. Get a fully configured project with **FastAPI** backend, **React** frontend, **PostgreSQL** database, and **Docker Compose** orchestration - all following industry best practices.
 
@@ -38,9 +39,9 @@ npm start
 node src/index.js
 ```
 
-### NPM Installation (Ready for Publishing)
+### NPM Installation ✅
 
-Once published to NPM, you'll be able to install with:
+Install from NPM registry:
 
 ```bash
 # Global installation
@@ -60,9 +61,10 @@ Simply run the command and follow the interactive prompts:
 # From cloned repository
 npm start
 
-# Or after global installation (when published)
+# Or after global installation
 stackwizard
-# OR with npx directly
+
+# Or use npx directly (no installation needed!)
 npx @rafeekpro/stackwizard
 ```
 
@@ -239,7 +241,7 @@ Built with love using:
 - 🐛 **Issues**: [GitHub Issues](https://github.com/rafeekpro/stackwizard/issues)
 - 📖 **Documentation**: [GitHub Wiki](https://github.com/rafeekpro/stackwizard/wiki)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/rafeekpro/stackwizard/discussions)
-- 📦 **NPM Package**: [@rafeekpro/stackwizard](https://www.npmjs.com/package/@rafeekpro/stackwizard) *(Publishing Soon)*
+- 📦 **NPM Package**: [@rafeekpro/stackwizard](https://www.npmjs.com/package/@rafeekpro/stackwizard)
 
 ---
 
