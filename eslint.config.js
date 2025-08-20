@@ -7,9 +7,6 @@ export default [
       globals: {
         console: 'readonly',
         process: 'readonly',
-        Buffer: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
       },
     },
     rules: {
