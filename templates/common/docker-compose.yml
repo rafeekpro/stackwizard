@@ -78,7 +78,7 @@ services:
         while ! nc -z db 5432; do sleep 1; done &&
         echo 'Database is ready!' &&
         alembic upgrade head &&
-        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+        uvicorn app.main:app --host 0.0.0.0 --port ${API_PORT:-8000} --reload
       "
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -181,8 +181,10 @@ services:
       - app-network
     profiles:
       - production
+    # NOTE: The health check assumes nginx is configured to proxy /health to the backend service
+    # Adjust the endpoint based on your nginx configuration
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
