@@ -1,12 +1,19 @@
 {
-  "name": "stackwizard-cli",
-  "version": "1.1.0",
+  "name": "@[YOUR_NPM_USERNAME]/stackwizard",
+  "version": "1.0.0",
   "description": "🧙‍♂️ Magical full-stack project generator with FastAPI, React, PostgreSQL, and Docker",
   "main": "src/index.js",
   "bin": {
     "stackwizard": "./src/index.js",
     "create-fullstack-app": "./src/index.js"
   },
+  "files": [
+    "src/",
+    "templates/",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test src/**/*.test.js || echo 'No tests found'",
@@ -23,25 +30,43 @@
     "react",
     "fastapi",
     "docker",
+    "docker-compose",
     "postgresql",
     "material-ui",
+    "mui",
     "tailwindcss",
+    "tailwind",
     "cli",
     "create-app",
-    "scaffold"
+    "scaffold",
+    "starter",
+    "template",
+    "alembic",
+    "sqlalchemy",
+    "jwt",
+    "authentication"
   ],
-  "author": "StackWizard Team",
+  "author": {
+    "name": "StackWizard Team",
+    "email": "support@stackwizard.dev",
+    "url": "https://github.com/rafeekpro"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rafeekpro/stackwizard.git"
+    "url": "git+https://github.com/rafeekpro/stackwizard.git"
   },
   "bugs": {
     "url": "https://github.com/rafeekpro/stackwizard/issues"
   },
   "homepage": "https://github.com/rafeekpro/stackwizard#readme",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "chalk": "^5.3.0",
