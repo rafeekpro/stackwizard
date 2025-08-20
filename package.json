@@ -1,28 +1,48 @@
 {
   "name": "stackwizard-cli",
-  "version": "1.0.0",
-  "description": "🧙‍♂️ Magical full-stack project generator with configurable UI",
+  "version": "1.1.0",
+  "description": "🧙‍♂️ Magical full-stack project generator with FastAPI, React, PostgreSQL, and Docker",
   "main": "src/index.js",
   "bin": {
-    "stackwizard": "./src/index.js"
+    "stackwizard": "./src/index.js",
+    "create-fullstack-app": "./src/index.js"
   },
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test src/**/*.test.js || echo 'No tests found'",
     "lint": "eslint src/ --ext .js",
     "format": "prettier --write 'src/**/*.js'",
-    "format:check": "prettier --check 'src/**/*.js'"
+    "format:check": "prettier --check 'src/**/*.js'",
+    "prepublishOnly": "npm run format:check && npm run lint"
   },
   "keywords": [
     "generator",
     "boilerplate",
     "fullstack",
+    "full-stack",
     "react",
     "fastapi",
-    "docker"
+    "docker",
+    "postgresql",
+    "material-ui",
+    "tailwindcss",
+    "cli",
+    "create-app",
+    "scaffold"
   ],
-  "author": "",
+  "author": "StackWizard Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rafeekpro/stackwizard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rafeekpro/stackwizard/issues"
+  },
+  "homepage": "https://github.com/rafeekpro/stackwizard#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "dependencies": {
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
