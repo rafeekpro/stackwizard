@@ -187,6 +187,8 @@ jobs:
         send \"8000\r\"
         expect \"Frontend port\"
         send \"3000\r\"
+        expect \"Select additional features\"
+        send \"\r\"
         expect eof
         " || echo "Expect script finished"
         
@@ -219,6 +221,8 @@ jobs:
         send \"8000\r\"
         expect \"Frontend port\"
         send \"3001\r\"
+        expect \"Select additional features\"
+        send \"\r\"
         expect eof
         " || echo "Expect script finished"
         
@@ -285,6 +289,8 @@ jobs:
         send \"8000\r\"
         expect \"Frontend port\"
         send \"3000\r\"
+        expect \"Select additional features\"
+        send \"\r\"
         expect eof
         " || echo "Expect script finished"
     
