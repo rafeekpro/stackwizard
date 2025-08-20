@@ -303,5 +303,5 @@ jobs:
     - name: Test Docker Compose build
       working-directory: docker-test-project
       run: |
-        docker-compose build
-        docker-compose config
+        docker compose build
+        docker compose config
