@@ -204,6 +204,7 @@ program
       
       let envContent = await fs.readFile(envExampleSrc, 'utf-8');
       envContent = envContent
+        .replace(/{{PROJECT_NAME}}/g, answers.projectName)
         .replace(/{{DB_NAME}}/g, answers.dbName)
         .replace(/{{DB_USER}}/g, answers.dbUser)
         .replace(/{{DB_PASSWORD}}/g, answers.dbPassword)
