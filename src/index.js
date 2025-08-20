@@ -275,60 +275,21 @@ coverage/
         await fs.writeFile(path.join(projectPath, '.gitignore'), gitignoreContent);
       }
       
-      spinner.text = 'Creating README...';
-      const readmeContent = `# ${answers.projectName}
-
-Full-stack application with FastAPI backend, React frontend (${answers.uiLibrary === 'mui' ? 'Material UI' : 'Tailwind CSS'}), and PostgreSQL database.
-
-## 🚀 Quick Start
-
-1. Make sure Docker and Docker Compose are installed
-2. Run the application:
-   \`\`\`bash
-   docker-compose up -d
-   \`\`\`
-
-## 📁 Project Structure
-
-\`\`\`
-${answers.projectName}/
-├── backend/          # FastAPI backend
-├── frontend/         # React frontend with ${answers.uiLibrary === 'mui' ? 'Material UI' : 'Tailwind CSS'}
-├── database/         # PostgreSQL initialization scripts
-├── docker-compose.yml
-└── .env             # Environment variables
-\`\`\`
-
-## 🔗 Access Points
-
-- Frontend: http://localhost:${answers.frontendPort}
-- Backend API: http://localhost:${answers.apiPort}
-- API Documentation: http://localhost:${answers.apiPort}/docs
-
-## 🛠️ Development
-
-### Backend
-\`\`\`bash
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port ${answers.apiPort}
-\`\`\`
-
-### Frontend
-\`\`\`bash
-cd frontend
-npm install
-npm start
-\`\`\`
-
-### Database
-PostgreSQL is running in Docker container on port 5432.
-
-## 📝 Environment Variables
-
-Check \`.env.example\` for all available configuration options.
-`;
-      await fs.writeFile(path.join(projectPath, 'README.md'), readmeContent);
+      spinner.text = 'Creating project README...';
+      const readmeSrc = path.join(TEMPLATES_DIR, 'common', 'PROJECT_README.md');
+      const readmeDest = path.join(projectPath, 'README.md');
+      
+      let readmeContent = await fs.readFile(readmeSrc, 'utf-8');
+      readmeContent = readmeContent
+        .replace(/{{PROJECT_NAME}}/g, answers.projectName)
+        .replace(/{{DB_NAME}}/g, answers.dbName)
+        .replace(/{{DB_USER}}/g, answers.dbUser)
+        .replace(/{{DB_PASSWORD}}/g, answers.dbPassword)
+        .replace(/{{API_PORT}}/g, answers.apiPort)
+        .replace(/{{FRONTEND_PORT}}/g, answers.frontendPort)
+        .replace(/{{UI_LIBRARY}}/g, answers.uiLibrary === 'mui' ? 'Material UI' : 'Tailwind CSS');
+      
+      await fs.writeFile(readmeDest, readmeContent);
 
       // Initialize Git repository if requested
       if (answers.features && answers.features.includes('git')) {
