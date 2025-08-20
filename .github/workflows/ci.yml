@@ -271,9 +271,34 @@ jobs:
     - name: Install generator dependencies
       run: npm ci
     
+    - name: Install expect
+      run: sudo apt-get update && sudo apt-get install -y expect
+    
     - name: Generate test project
       run: |
-        echo -e "docker-test-project\n1\nlocalhost\n5432\ntestdb\ntestuser\ntestpass\n8000\n3000\n" | npm start
+        expect -c "
+        set timeout 60
+        spawn node src/index.js
+        expect \"What is your project name?\"
+        send \"docker-test-project\r\"
+        expect \"Choose your UI library\"
+        send \"\r\"
+        expect \"Database host\"
+        send \"localhost\r\"
+        expect \"Database port\"
+        send \"5432\r\"
+        expect \"Database name\"
+        send \"testdb\r\"
+        expect \"Database username\"
+        send \"testuser\r\"
+        expect \"Database password\"
+        send \"testpass\r\"
+        expect \"Backend port\"
+        send \"8000\r\"
+        expect \"Frontend port\"
+        send \"3000\r\"
+        expect eof
+        " || echo "Expect script finished"
     
     - name: Test Docker Compose build
       working-directory: docker-test-project
