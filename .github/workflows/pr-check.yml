@@ -51,6 +51,7 @@ jobs:
   test-coverage:
     name: Test Coverage Report
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     services:
       postgres:
