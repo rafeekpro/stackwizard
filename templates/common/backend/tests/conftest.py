@@ -45,9 +45,13 @@ from app.core.config import get_settings
 from app.services.auth import AuthService
 
 # Use PostgreSQL for tests - same as production but different database
+# First try DATABASE_URL, then TEST_DATABASE_URL, then default
 SQLALCHEMY_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL",
-    "postgresql://postgres:postgres@localhost:5432/test_app_test"
+    "DATABASE_URL",
+    os.getenv(
+        "TEST_DATABASE_URL",
+        "postgresql://postgres:postgres@localhost:5432/test_app_test"
+    )
 )
 
 # For PostgreSQL, we don't need check_same_thread or StaticPool
