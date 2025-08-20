@@ -51,6 +51,18 @@ npm install -g @rafeekpro/stackwizard
 npx @rafeekpro/stackwizard my-awesome-app
 ```
 
+### GitHub Packages (Alternative)
+
+Install from GitHub Packages registry:
+
+```bash
+# Configure npm to use GitHub registry for @rafeekpro scope
+npm config set @rafeekpro:registry https://npm.pkg.github.com
+
+# Install globally
+npm install -g @rafeekpro/stackwizard
+```
+
 ## 📋 Usage
 
 ### Interactive Mode (Recommended)
