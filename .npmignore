@@ -1,0 +1,160 @@
+# Development and testing
+node_modules/
+*.test.js
+*.spec.js
+test/
+tests/
+__tests__/
+coverage/
+.nyc_output/
+
+# Environment and configuration
+.env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Git and CI/CD
+.git/
+.github/
+.gitignore
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+jenkinsfile
+
+# Documentation source files
+docs/
+*.md
+!README.md
+
+# Build and cache files
+dist/
+build/
+.cache/
+.parcel-cache/
+.next/
+out/
+.nuxt/
+.vuepress/dist/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.pnp.*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variable files
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# Development artifacts
+*.pid
+*.seed
+*.pid.lock
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# Project specific
+/tmp
+/temp
+/backups
+*.backup
+*.bak
+
+# Keep only essential files for the npm package
+# The 'files' field in package.json will include:
+# - src/
+# - templates/
+# - README.md
+# - LICENSE
+# - package.json
