@@ -9,23 +9,14 @@ Before publishing, ensure you have:
 - [ ] Node.js 16+ and npm 7+ installed
 - [ ] All tests passing
 - [ ] Updated version number in package.json
-- [ ] Replaced `[YOUR_NPM_USERNAME]` placeholder in package.json and README.md
+- [x] ✅ Package name updated to `@rafeekpro/stackwizard`
 
 ## 🔧 Preparation Steps
 
-### 1. Update Package Name
+### 1. ✅ Package Name Updated
 
-Replace `[YOUR_NPM_USERNAME]` with your actual npm username in:
-
-```bash
-# In package.json
-sed -i '' 's/\[YOUR_NPM_USERNAME\]/YOUR_ACTUAL_USERNAME/g' package.json
-
-# In README.md
-sed -i '' 's/\[YOUR_NPM_USERNAME\]/YOUR_ACTUAL_USERNAME/g' README.md
-```
-
-Example: If your npm username is `johndoe`, the package name should be `@johndoe/stackwizard`
+The package name has been set to `@rafeekpro/stackwizard` in package.json.
+All placeholders have been replaced with your NPM username: `rafeekpro`
 
 ### 2. Verify Package Configuration
 
@@ -66,7 +57,7 @@ cd /tmp
 stackwizard test-project
 
 # Unlink after testing
-npm unlink -g @[YOUR_NPM_USERNAME]/stackwizard
+npm unlink -g @rafeekpro/stackwizard
 ```
 
 ### Step 3: Publish to npm
@@ -85,10 +76,10 @@ npm publish --access public
 
 ```bash
 # Check if package is available
-npm view @[YOUR_NPM_USERNAME]/stackwizard
+npm view @rafeekpro/stackwizard
 
 # Test installation from npm
-npx @[YOUR_NPM_USERNAME]/stackwizard --version
+npx @rafeekpro/stackwizard --version
 ```
 
 ## 📝 Complete Command Sequence
@@ -99,13 +90,8 @@ Here's the complete sequence for publishing:
 # 1. Ensure you're on the correct branch
 git checkout feature/npm-publication
 
-# 2. Update placeholders (replace 'yourusername' with your npm username)
-export NPM_USERNAME="yourusername"
-sed -i '' "s/\[YOUR_NPM_USERNAME\]/$NPM_USERNAME/g" package.json README.md
-
-# 3. Commit changes
-git add -A
-git commit -m "chore: Update npm username for publication"
+# 2. ✅ Username already updated to rafeekpro
+# (Skip this step - already done)
 
 # 4. Login to npm
 npm login
@@ -113,14 +99,14 @@ npm login
 # 5. Test the package locally
 npm link
 cd /tmp && stackwizard test-local-project
-cd - && npm unlink -g @$NPM_USERNAME/stackwizard
+cd - && npm unlink -g @rafeekpro/stackwizard
 
 # 6. Publish to npm (first time publication)
 npm publish --access public
 
 # 7. Verify publication
-npm view @$NPM_USERNAME/stackwizard
-npx @$NPM_USERNAME/stackwizard --version
+npm view @rafeekpro/stackwizard
+npx @rafeekpro/stackwizard --version
 ```
 
 ## 🔄 Updating the Package
@@ -147,9 +133,9 @@ git push origin --tags
 
 After successful publication:
 
-1. **Check npm page**: Visit `https://www.npmjs.com/package/@[YOUR_NPM_USERNAME]/stackwizard`
+1. **Check npm page**: Visit `https://www.npmjs.com/package/@rafeekpro/stackwizard`
 2. **Update GitHub**: Push changes and create a release
-3. **Test installation**: `npx @[YOUR_NPM_USERNAME]/stackwizard`
+3. **Test installation**: `npx @rafeekpro/stackwizard`
 4. **Monitor downloads**: Check npm stats at `https://npm-stat.com/`
 
 ## 🚨 Troubleshooting
@@ -175,8 +161,8 @@ After successful publication:
 ## 🎉 Success Checklist
 
 After publication, users can:
-- [ ] Run `npx @[YOUR_NPM_USERNAME]/stackwizard` without installation
-- [ ] Install globally with `npm i -g @[YOUR_NPM_USERNAME]/stackwizard`
+- [ ] Run `npx @rafeekpro/stackwizard` without installation
+- [ ] Install globally with `npm i -g @rafeekpro/stackwizard`
 - [ ] View package on npmjs.com
 - [ ] See proper README on npm page
 - [ ] Use all CLI features
@@ -190,4 +176,4 @@ After publication, users can:
 
 ---
 
-**Note**: Remember to replace `[YOUR_NPM_USERNAME]` with your actual npm username throughout the process!
+**Note**: All placeholders have been updated to use your NPM username: `rafeekpro`

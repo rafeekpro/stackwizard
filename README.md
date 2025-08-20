@@ -38,16 +38,16 @@ npm start
 node src/index.js
 ```
 
-### NPM Installation (Coming Soon)
+### NPM Installation (Ready for Publishing)
 
 Once published to NPM, you'll be able to install with:
 
 ```bash
 # Global installation
-npm install -g stackwizard-cli
+npm install -g @rafeekpro/stackwizard
 
-# Or use npx
-npx stackwizard-cli my-awesome-app
+# Or use npx directly
+npx @rafeekpro/stackwizard my-awesome-app
 ```
 
 ## 📋 Usage
@@ -62,6 +62,8 @@ npm start
 
 # Or after global installation (when published)
 stackwizard
+# OR with npx directly
+npx @rafeekpro/stackwizard
 ```
 
 You'll be asked to configure:
@@ -233,10 +235,11 @@ Built with love using:
 
 ## 📞 Support
 
-- 📧 **Email**: support@stackwizard.dev
+- 📧 **Email**: support@stackwizard.dev  
 - 🐛 **Issues**: [GitHub Issues](https://github.com/rafeekpro/stackwizard/issues)
 - 📖 **Documentation**: [GitHub Wiki](https://github.com/rafeekpro/stackwizard/wiki)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/rafeekpro/stackwizard/discussions)
+- 📦 **NPM Package**: [@rafeekpro/stackwizard](https://www.npmjs.com/package/@rafeekpro/stackwizard) *(Publishing Soon)*
 
 ---
 
