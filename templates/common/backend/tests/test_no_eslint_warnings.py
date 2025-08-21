@@ -67,6 +67,11 @@ def test_no_eslint_warnings_in_frontend():
     project_root = backend_path.parent
     frontend_path = project_root / "frontend"
     
+    # Skip this test if frontend directory doesn't exist (e.g., when running in template development)
+    if not frontend_path.exists():
+        import pytest
+        pytest.skip("Frontend directory not found - skipping ESLint test (this is normal in template development)")
+    
     print(f"\n🔍 Checking ESLint warnings in: {frontend_path}")
     
     success, warnings, errors, issues = check_eslint_warnings(str(frontend_path))
@@ -95,6 +100,11 @@ def test_required_eslint_config_exists():
     project_root = backend_path.parent
     frontend_path = project_root / "frontend"
     package_json_path = frontend_path / "package.json"
+    
+    # Skip this test if frontend directory doesn't exist (e.g., when running in template development)
+    if not frontend_path.exists():
+        import pytest
+        pytest.skip("Frontend directory not found - skipping ESLint config test (this is normal in template development)")
     
     assert package_json_path.exists(), "Frontend package.json not found"
     
