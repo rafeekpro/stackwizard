@@ -1,6 +1,6 @@
 from typing import List, Union
 from pydantic_settings import BaseSettings
-from pydantic import AnyHttpUrl, validator
+from pydantic import validator
 import os
 import secrets
 
@@ -25,19 +25,26 @@ class Settings(BaseSettings):
         return self.DATABASE_URL
     
     # CORS settings
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
+    BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:8000", 
-        "http://frontend:3000"
+        "http://frontend:3000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8000"
     ]
     
     @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
+    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str):
+            if v.startswith("["):
+                # Handle JSON-like string
+                import json
+                return json.loads(v)
+            # Handle comma-separated string
             return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+        elif isinstance(v, list):
             return v
-        raise ValueError(v)
+        raise ValueError(f"Invalid CORS origins: {v}")
     
     # Security settings
     SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))

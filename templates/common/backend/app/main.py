@@ -34,6 +34,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Include API router
@@ -54,6 +55,15 @@ def root():
 
 @app.get("/health")
 def health_check():
+    return {
+        "status": "healthy",
+        "service": "stackwizard-backend",
+        "version": settings.VERSION
+    }
+
+@app.get("/api/health")
+def api_health_check():
+    """Health check endpoint for frontend"""
     return {
         "status": "healthy",
         "service": "stackwizard-backend",

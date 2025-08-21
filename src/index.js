@@ -248,12 +248,19 @@ program
       await fs.writeFile(envExampleDest, envContent);
       await fs.writeFile(envDest, envContent);
 
+      // Create uploads directory for backend
+      spinner.text = 'Creating uploads directory...';
+      const uploadsDir = path.join(projectPath, 'uploads');
+      await fs.ensureDir(uploadsDir);
+      await fs.writeFile(path.join(uploadsDir, '.gitkeep'), '');
+
       spinner.text = 'Updating package.json configurations...';
       const packageJsonPath = path.join(frontendDest, 'package.json');
       if (fs.existsSync(packageJsonPath)) {
         const packageJson = await fs.readJson(packageJsonPath);
         packageJson.name = answers.projectName;
-        packageJson.proxy = `http://localhost:${answers.apiPort}`;
+        // Keep proxy as backend:8000 for container communication
+        // packageJson.proxy is already set correctly in template
         await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
       }
 

@@ -27,6 +27,7 @@ httpx==0.25.1
 pytest==7.4.3
 pytest-asyncio==0.21.1
 pytest-httpx==0.26.0
+requests==2.31.0
 
 # Additional utilities
 uuid6==2023.5.2

@@ -136,6 +136,11 @@ pytest tests/test_auth.py
 
 # Run with verbose output
 pytest -v
+
+# Run integration tests (requires running backend)
+./run_integration_tests.sh
+# OR
+python tests/test_integration.py
 ```
 
 ### Frontend Development
