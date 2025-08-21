@@ -30,10 +30,10 @@ jobs:
         cd test-mui-project/frontend
         npm install
     
-    - name: Run ESLint check
+    - name: Build frontend (includes ESLint check)
       run: |
         cd test-mui-project/frontend
-        npx eslint src --format stylish --max-warnings 0
+        CI=true npm run build
       continue-on-error: false
     
     - name: Report ESLint results
@@ -65,10 +65,10 @@ jobs:
         cd test-tailwind-project/frontend
         npm install
     
-    - name: Run ESLint check
+    - name: Build frontend (includes ESLint check)
       run: |
         cd test-tailwind-project/frontend
-        npx eslint src --format stylish --max-warnings 0
+        CI=true npm run build
       continue-on-error: false
     
     - name: Report ESLint results

@@ -71,38 +71,55 @@ async function runESLintCheck(projectPath, projectType) {
     spinner.text = 'Installing frontend dependencies...';
     await execAsync('npm install --silent', { cwd: frontendPath });
     
-    // Run ESLint
-    spinner.text = `Running ESLint for ${projectType}...`;
-    const { stdout, stderr } = await execAsync('npx eslint src --format json', { 
+    // Run build which includes ESLint check
+    spinner.text = `Running build with ESLint check for ${projectType}...`;
+    const buildResult = await execAsync('CI=true npm run build 2>&1', { 
       cwd: frontendPath,
-      maxBuffer: 1024 * 1024 * 10 // 10MB buffer for large outputs
-    }).catch(e => ({ stdout: e.stdout || '[]', stderr: e.stderr || '' }));
+      maxBuffer: 1024 * 1024 * 10, // 10MB buffer for large outputs
+      env: { ...process.env, CI: 'true' }
+    }).catch(e => ({ 
+      stdout: e.stdout || '', 
+      stderr: e.stderr || '', 
+      code: e.code,
+      failed: true 
+    }));
     
-    const results = JSON.parse(stdout || '[]');
+    const output = buildResult.stdout + buildResult.stderr;
     
-    // Analyze results
+    // Check for ESLint warnings/errors in build output
+    const warningMatches = output.match(/Line \d+:\d+:/g) || [];
+    const errorMatches = output.match(/Error:/g) || [];
+    const compiledWithWarnings = output.includes('Compiled with warnings');
+    const failedToCompile = output.includes('Failed to compile');
+    
     let totalWarnings = 0;
     let totalErrors = 0;
     const issues = [];
     
-    for (const file of results) {
-      if (file.warningCount > 0 || file.errorCount > 0) {
-        totalWarnings += file.warningCount;
-        totalErrors += file.errorCount;
-        
-        const relativePath = path.relative(frontendPath, file.filePath);
-        
-        for (const message of file.messages) {
-          issues.push({
-            file: relativePath,
-            line: message.line,
-            column: message.column,
-            severity: message.severity === 2 ? 'error' : 'warning',
-            message: message.message,
-            rule: message.ruleId
-          });
+    if (compiledWithWarnings || warningMatches.length > 0) {
+      // Extract warning details from output
+      const lines = output.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.includes('Line ') && line.includes(':')) {
+          const match = line.match(/Line (\d+):(\d+):\s+(.+)/);
+          if (match) {
+            totalWarnings++;
+            issues.push({
+              severity: 'warning',
+              message: line.trim()
+            });
+          }
         }
       }
+    }
+    
+    if (failedToCompile || buildResult.failed) {
+      totalErrors = 1;
+      issues.push({
+        severity: 'error',
+        message: 'Build failed - check console output'
+      });
     }
     
     if (totalErrors > 0) {
