@@ -28,13 +28,15 @@ app = FastAPI(
 )
 
 # Set all CORS enabled origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin).strip() for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -54,6 +56,15 @@ def root():
 
 @app.get("/health")
 def health_check():
+    return {
+        "status": "healthy",
+        "service": "stackwizard-backend",
+        "version": settings.VERSION
+    }
+
+@app.get("/api/health")
+def api_health_check():
+    """Health check endpoint for frontend"""
     return {
         "status": "healthy",
         "service": "stackwizard-backend",
