@@ -14,6 +14,11 @@ const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Read version from package.json
+const packageJsonPath = path.join(__dirname, '..', 'package.json');
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+const VERSION = packageJson.version;
+
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 
 // ASCII Art Banner
@@ -28,7 +33,7 @@ const banner = chalk.cyan(`
 `);
 
 program
-  .version('1.1.0')
+  .version(VERSION)
   .description(
     '🧙‍♂️ StackWizard - Magical full-stack project generator with FastAPI, React, and PostgreSQL'
   )
