@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../services/api';
 import {
   UserIcon,
   EnvelopeIcon,
@@ -20,10 +19,7 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+    const fetchDashboardData = async () => {
     try {
       // Fetch user stats (if endpoint exists)
       // For now, we'll use mock data or basic user info
@@ -46,6 +42,9 @@ const DashboardPage = () => {
       setLoading(false);
     }
   };
+  
+  fetchDashboardData();
+}, [user]);
 
   const calculateAccountAge = (createdAt) => {
     if (!createdAt) return '0 days';

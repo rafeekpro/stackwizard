@@ -7,8 +7,6 @@ function HomePage() {
     api: 'checking',
     database: 'checking',
   });
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const fetchHealth = async () => {
       try {
@@ -24,8 +22,6 @@ function HomePage() {
           api: 'error',
           database: 'error',
         });
-      } finally {
-        setLoading(false);
       }
     };
 
