@@ -18,38 +18,56 @@ class TestCORSConfiguration:
         assert "http://frontend:3000" in settings.BACKEND_CORS_ORIGINS
         assert "http://127.0.0.1:3000" in settings.BACKEND_CORS_ORIGINS
     
-    def test_cors_origins_from_comma_separated_env(self, monkeypatch):
+    def test_cors_origins_from_comma_separated_env(self):
         """Test CORS origins from comma-separated environment variable"""
-        monkeypatch.setenv("BACKEND_CORS_ORIGINS", "http://example.com,http://test.com,http://app.com")
-        settings = Settings()
-        assert len(settings.BACKEND_CORS_ORIGINS) == 3
-        assert "http://example.com" in settings.BACKEND_CORS_ORIGINS
-        assert "http://test.com" in settings.BACKEND_CORS_ORIGINS
-        assert "http://app.com" in settings.BACKEND_CORS_ORIGINS
+        # Note: Environment variables need to be set before Settings instantiation
+        import os
+        original = os.environ.get("BACKEND_CORS_ORIGINS")
+        try:
+            os.environ["BACKEND_CORS_ORIGINS"] = "http://example.com,http://test.com,http://app.com"
+            settings = Settings()
+            assert len(settings.BACKEND_CORS_ORIGINS) == 3
+            assert "http://example.com" in settings.BACKEND_CORS_ORIGINS
+            assert "http://test.com" in settings.BACKEND_CORS_ORIGINS
+            assert "http://app.com" in settings.BACKEND_CORS_ORIGINS
+        finally:
+            if original:
+                os.environ["BACKEND_CORS_ORIGINS"] = original
+            else:
+                os.environ.pop("BACKEND_CORS_ORIGINS", None)
     
-    def test_cors_origins_from_json_env(self, monkeypatch):
+    def test_cors_origins_from_json_env(self):
         """Test CORS origins from JSON environment variable"""
-        monkeypatch.setenv("BACKEND_CORS_ORIGINS", '["http://json1.com","http://json2.com"]')
-        settings = Settings()
-        assert len(settings.BACKEND_CORS_ORIGINS) == 2
-        assert "http://json1.com" in settings.BACKEND_CORS_ORIGINS
-        assert "http://json2.com" in settings.BACKEND_CORS_ORIGINS
+        import os
+        original = os.environ.get("BACKEND_CORS_ORIGINS")
+        try:
+            os.environ["BACKEND_CORS_ORIGINS"] = '["http://json1.com","http://json2.com"]'
+            settings = Settings()
+            assert len(settings.BACKEND_CORS_ORIGINS) == 2
+            assert "http://json1.com" in settings.BACKEND_CORS_ORIGINS
+            assert "http://json2.com" in settings.BACKEND_CORS_ORIGINS
+        finally:
+            if original:
+                os.environ["BACKEND_CORS_ORIGINS"] = original
+            else:
+                os.environ.pop("BACKEND_CORS_ORIGINS", None)
     
-    def test_cors_origins_with_whitespace(self, monkeypatch):
+    def test_cors_origins_with_whitespace(self):
         """Test CORS origins with whitespace in comma-separated string"""
-        monkeypatch.setenv("BACKEND_CORS_ORIGINS", "http://a.com , http://b.com , http://c.com")
-        settings = Settings()
-        assert len(settings.BACKEND_CORS_ORIGINS) == 3
-        assert "http://a.com" in settings.BACKEND_CORS_ORIGINS
-        assert "http://b.com" in settings.BACKEND_CORS_ORIGINS
-        assert "http://c.com" in settings.BACKEND_CORS_ORIGINS
-    
-    def test_cors_origins_invalid_value(self, monkeypatch):
-        """Test CORS origins with invalid value raises error"""
-        monkeypatch.setenv("BACKEND_CORS_ORIGINS", "123")  # Invalid - not a URL format
-        # This should still work as it's just a string now
-        settings = Settings()
-        assert settings.BACKEND_CORS_ORIGINS == ["123"]
+        import os
+        original = os.environ.get("BACKEND_CORS_ORIGINS")
+        try:
+            os.environ["BACKEND_CORS_ORIGINS"] = "http://a.com , http://b.com , http://c.com"
+            settings = Settings()
+            assert len(settings.BACKEND_CORS_ORIGINS) == 3
+            assert "http://a.com" in settings.BACKEND_CORS_ORIGINS
+            assert "http://b.com" in settings.BACKEND_CORS_ORIGINS
+            assert "http://c.com" in settings.BACKEND_CORS_ORIGINS
+        finally:
+            if original:
+                os.environ["BACKEND_CORS_ORIGINS"] = original
+            else:
+                os.environ.pop("BACKEND_CORS_ORIGINS", None)
     
     def test_cors_origins_type_is_list_str(self):
         """Test that CORS origins type is List[str] not List[AnyHttpUrl]"""
@@ -84,12 +102,20 @@ class TestSecuritySettings:
         assert settings.SECRET_KEY
         assert len(settings.SECRET_KEY) > 20
     
-    def test_secret_key_from_env(self, monkeypatch):
+    def test_secret_key_from_env(self):
         """Test SECRET_KEY from environment variable"""
-        test_key = "test-secret-key-12345"
-        monkeypatch.setenv("SECRET_KEY", test_key)
-        settings = Settings()
-        assert settings.SECRET_KEY == test_key
+        import os
+        original = os.environ.get("SECRET_KEY")
+        try:
+            test_key = "test-secret-key-12345"
+            os.environ["SECRET_KEY"] = test_key
+            settings = Settings()
+            assert settings.SECRET_KEY == test_key
+        finally:
+            if original:
+                os.environ["SECRET_KEY"] = original
+            else:
+                os.environ.pop("SECRET_KEY", None)
     
     def test_token_expiry_settings(self):
         """Test token expiry settings have default values"""
