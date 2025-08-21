@@ -176,7 +176,6 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
 ```
 
 ### Production Docker Compose
