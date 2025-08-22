@@ -308,7 +308,8 @@ async function main() {
       process.exit(1);
     }
   } catch (error) {
-    console.error(error('Test failed with error:'), error);
+  } catch (err) {
+    console.error(error('Test failed with error:'), err);
     await cleanup();
     process.exit(1);
   }
