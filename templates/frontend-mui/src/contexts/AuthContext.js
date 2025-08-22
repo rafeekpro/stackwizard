@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       // Backend expects form-data for OAuth2PasswordRequestForm
+      // v1.0.12 - Using correct API path
       const params = new URLSearchParams();
       params.append('username', email); // OAuth2 uses 'username' field for email
       params.append('password', password);
