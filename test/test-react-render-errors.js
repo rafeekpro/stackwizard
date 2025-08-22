@@ -375,7 +375,7 @@ if (!process.env.CI) {
     console.log(warning('\n⚠️  Puppeteer not installed. Installing for test...'));
     execSync('npm install --no-save puppeteer', { stdio: 'inherit' });
   }
-}
+// Ensure puppeteer is listed as a devDependency in package.json before running tests.
 
 // Run the tests
 runTests().catch(err => {
