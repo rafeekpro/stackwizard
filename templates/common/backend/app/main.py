@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.v1.api import api_router
@@ -67,7 +68,7 @@ def health_check():
 def database_health_check(db: Session = Depends(get_db)):
     """Database health check endpoint"""
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {
             "status": "healthy",
             "database": "connected"
@@ -92,7 +93,7 @@ def api_health_check():
 def api_database_health_check(db: Session = Depends(get_db)):
     """Database health check endpoint for frontend"""
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {
             "status": "healthy",
             "database": "connected"
