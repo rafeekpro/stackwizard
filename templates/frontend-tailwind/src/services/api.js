@@ -55,7 +55,7 @@ export default api;
 
 // API functions
 export const checkHealth = async (endpoint = '') => {
-  const response = await api.get(`/api/health${endpoint}`);
+  const response = await api.get(`/health${endpoint}`);
   return response.data;
 };
 
