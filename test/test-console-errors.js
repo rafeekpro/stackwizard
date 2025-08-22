@@ -34,7 +34,7 @@ async function cleanup() {
   
   // Stop any running Docker containers
   try {
-    await execAsync(`cd ${TEST_PROJECT_PATH} && docker-compose down`, { 
+    await execAsync('docker-compose down', { 
       cwd: TEST_PROJECT_PATH 
     }).catch(() => {});
   } catch (e) {
