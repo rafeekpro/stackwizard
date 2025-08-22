@@ -73,7 +73,7 @@ const API_TESTS = [
     endpoint: '/api/v1/auth/login',
     data: {
       username: 'admin@example.com',
-      password: 'Admin123!'
+      password: 'admin123'
     },
     contentType: 'application/x-www-form-urlencoded',
     expectedStatus: 200,
