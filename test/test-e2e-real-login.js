@@ -435,7 +435,14 @@ if (!process.env.CI) {
     console.log(warning('\n⚠️  Installing puppeteer for test...'));
     console.log(warning('\n⚠️  Installing puppeteer@21.3.8 for test...'));
     execSync('npm install --no-save puppeteer@21.3.8', { stdio: 'inherit' });
-  }
+  (async () => {
+    try {
+      await import('puppeteer');
+    } catch (e) {
+      console.log(warning('\n⚠️  Installing puppeteer for test...'));
+      execSync('npm install --no-save puppeteer', { stdio: 'inherit' });
+    }
+  })();
 }
 
 // Run the tests
