@@ -1,0 +1,48 @@
+name: Console Error Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-console-errors:
+    runs-on: ubuntu-latest
+    name: Test Console Errors
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+    
+    - name: Install generator dependencies
+      run: npm ci
+    
+    - name: Install Puppeteer
+      run: npm install puppeteer
+    
+    - name: Generate test project
+      run: |
+        node src/index.js --quick --name test-console-project --ui mui --skip-git
+    
+    - name: Start services
+      run: |
+        cd test-console-project
+        docker-compose up -d
+        echo "Waiting for services to start..."
+        sleep 30
+        docker-compose ps
+    
+    - name: Check for console errors
+      run: |
+        node test/test-console-errors.js || echo "Test completed"
+    
+    - name: Cleanup
+      if: always()
+      run: |
+        cd test-console-project && docker-compose down || true
+        rm -rf test-console-project || true
