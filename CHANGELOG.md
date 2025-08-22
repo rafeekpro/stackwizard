@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.9] - 2025-08-22
+
 ### 🐛 Bug Fixes
 - **React Render Error**: Fixed "Objects are not valid as a React child" error in AuthContext
 - **Error Handling**: Properly handle FastAPI validation error objects in frontend
