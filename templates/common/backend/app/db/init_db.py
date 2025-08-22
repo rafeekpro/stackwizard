@@ -27,6 +27,7 @@ async def init_db() -> None:
             # Create first superuser
             superuser = User(
                 email=settings.FIRST_SUPERUSER_EMAIL,
+                username=settings.FIRST_SUPERUSER_USERNAME,
                 hashed_password=AuthService.get_password_hash(settings.FIRST_SUPERUSER_PASSWORD),
                 full_name="System Administrator",
                 is_active=True,
