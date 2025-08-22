@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.11] - 2025-08-22
+
+### 🐛 Bug Fixes
+- **React Router v7**: Added future flags to prevent deprecation warnings
+- **Missing Routes**: Added /unauthorized route for proper 401 handling
+- **404 Page**: Added catch-all route with NotFoundPage component
+
+### ✨ New Features
+- **Error Pages**: Added UnauthorizedPage (401) and NotFoundPage (404) components
+- **Router Configuration**: Configured v7_startTransition and v7_relativeSplatPath flags
+- **Route Testing**: Added comprehensive test for React Router issues detection
+
+### 🧪 Testing
+- **New Test**: Created test-react-router-issues.js to detect routing problems
+- **CI Workflow**: Added React Router test workflow for continuous validation
+- **Coverage**: Tests both MUI and Tailwind templates for router issues
+
 ## [1.0.10] - 2025-08-22
 
 ### 🐛 Critical Bug Fixes
