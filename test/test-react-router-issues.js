@@ -136,7 +136,7 @@ function checkRoutes() {
     '/users',
     '/items',
     '/about',
-    '/unauthorized'  // This is currently missing!
+    '/unauthorized'
   ];
   
   const missingRoutes = [];
