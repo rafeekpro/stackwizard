@@ -25,6 +25,8 @@ const TEST_PROJECT_NAME = 'test-e2e-login';
 const TEST_DIR = join(__dirname, '..', 'test-output', TEST_PROJECT_NAME);
 const API_URL = 'http://localhost:8000';
 const FRONTEND_URL = 'http://localhost:3000';
+const ADMIN_EMAIL = 'admin@example.com';
+const ADMIN_PASSWORD = 'admin123';
 
 /**
  * Clean up test environment
@@ -113,10 +115,6 @@ function verifyAuthContextImplementation() {
     console.log(error('❌ AuthContext is NOT using URLSearchParams!'));
     console.log(warning('   It appears to be sending JSON instead of form-data'));
     
-    // Show what's actually there
-    const loginMatch = content.match(/const login = async[\s\S]*?^  \}/m);
-    if (loginMatch) {
-      console.log(info('\nActual login implementation:'));
     // Robustly extract the login function implementation by counting braces
     const loginStart = content.indexOf('const login = async');
     if (loginStart !== -1) {
@@ -216,8 +214,8 @@ async function testLoginAPI() {
   console.log(info('\n1️⃣ Testing JSON format (should fail with 422)...'));
   try {
     await axios.post(`${API_URL}/api/v1/auth/login`, {
-      username: 'admin@example.com',
-      password: 'admin123'
+      username: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD
     }, {
       headers: {
         'Content-Type': 'application/json'
@@ -237,8 +235,8 @@ async function testLoginAPI() {
   console.log(info('\n2️⃣ Testing form-data format (should succeed)...'));
   try {
     const params = new URLSearchParams();
-    params.append('username', 'admin@example.com');
-    params.append('password', 'admin123');
+    params.append('username', ADMIN_EMAIL);
+    params.append('password', ADMIN_PASSWORD);
     
     const response = await axios.post(`${API_URL}/api/v1/auth/login`, params, {
       headers: {
@@ -300,7 +298,6 @@ async function testLoginBrowser() {
     
     // Fill login form
     console.log(info('📝 Filling login form...'));
-    await page.type('input[name="email"], input[type="email"]', 'admin@example.com');
     await page.type('input[name="email"], input[type="email"]', ADMIN_EMAIL);
     await page.type('input[name="password"], input[type="password"]', ADMIN_PASSWORD);
     
@@ -429,12 +426,6 @@ async function runTests() {
 
 // Check for puppeteer
 if (!process.env.CI) {
-  try {
-    require.resolve('puppeteer');
-  } catch (e) {
-    console.log(warning('\n⚠️  Installing puppeteer for test...'));
-    console.log(warning('\n⚠️  Installing puppeteer@21.3.8 for test...'));
-    execSync('npm install --no-save puppeteer@21.3.8', { stdio: 'inherit' });
   (async () => {
     try {
       await import('puppeteer');
