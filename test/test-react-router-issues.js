@@ -97,14 +97,14 @@ exit 0
 function checkReactRouterConfig() {
   console.log(info('\n🔍 Checking React Router configuration...'));
   
-  const appJsPath = join(TEST_DIR, 'frontend', 'src', 'App.js');
+  const indexJsPath = join(TEST_DIR, 'frontend', 'src', 'index.js');
   
-  if (!fs.existsSync(appJsPath)) {
-    console.log(error('❌ App.js not found!'));
+  if (!fs.existsSync(indexJsPath)) {
+    console.log(error('❌ index.js not found!'));
     return false;
   }
   
-  const content = fs.readFileSync(appJsPath, 'utf-8');
+  const content = fs.readFileSync(indexJsPath, 'utf-8');
   
   // Check for future flags
   const hasFutureFlags = content.includes('v7_startTransition') || 
