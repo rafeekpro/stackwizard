@@ -2,6 +2,63 @@
 
 All notable changes to StackWizard will be documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### 🐛 Bug Fixes
+- **Auth Endpoints**: Fixed auth endpoint paths in frontend (`/auth/login` → `/api/v1/auth/login`) to resolve 404 errors
+- **Auth Context**: Fixed register and logout endpoints in AuthContext for both MUI and Tailwind templates
+- **Password Consistency**: Fixed admin password consistency across templates (now uses `admin123`)
+- **Environment Config**: Updated .env.example to match backend config defaults
+- **Admin User Creation**: Added username field to admin user initialization to fix OAuth2 login
+- **Items Table Migration**: Added missing migration for items table to fix 500 errors on items endpoints
+
+### ✨ Improvements
+- **API Testing**: Added comprehensive API endpoint validation test covering 39 endpoints
+- **Runtime Testing**: Added runtime API testing with Docker environment
+- **CI/CD**: Created CI workflows for automated API testing
+- **Test Coverage**: Updated all auth-related tests to use correct API paths
+
+### 📚 Documentation
+- **Changelog**: Updated CHANGELOG.md for better version tracking
+- **Critical Rules**: Added changelog update requirements to critical rules
+
+## [1.0.7] - 2025-08-22
+
+### 🐛 Bug Fixes
+- **Health Endpoints**: Fixed health endpoint 404 errors reported by users
+- **Database Status**: Fixed database connectivity status display
+- **SQL Compatibility**: Added proper SQLAlchemy text() wrapper for raw SQL queries
+
+### ✨ Improvements  
+- **Health Testing**: Added comprehensive health endpoint testing
+- **CI Workflows**: Added CI workflow for automated health endpoint validation
+- **API Detection**: Improved API endpoint detection in tests
+
+## [1.0.6] - 2025-08-22
+
+### 🐛 Bug Fixes
+- **Health Paths**: Fixed health endpoint paths to resolve 404 errors
+- **Console Errors**: Added console error detection tests
+- **API Validation**: Fixed API endpoint validation
+
+### ✨ Improvements
+- **Error Detection**: Added comprehensive testing for console errors
+- **CI Pipeline**: Improved CI/CD pipeline with additional test coverage
+- **Documentation**: Enhanced branch protection documentation
+
+## [1.0.5] - 2025-08-22
+
+### ✨ Features
+- **Stable Release**: Production-ready version of StackWizard
+- **UI Options**: Full support for Material UI and Tailwind CSS
+- **Auth System**: Complete authentication system with JWT
+- **Admin Features**: Admin dashboard with comprehensive user management
+- **Docker Support**: Full Docker Compose orchestration
+- **Test Suites**: Comprehensive test coverage
+
 ## [1.0.4] - 2024-08-21
 
 ### 🐛 Bug Fixes

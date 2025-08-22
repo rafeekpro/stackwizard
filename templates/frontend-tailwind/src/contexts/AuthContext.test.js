@@ -71,7 +71,7 @@ describe('AuthContext', () => {
     });
 
     expect(localStorage.getItem('token')).toBe('test-token');
-    expect(api.post).toHaveBeenCalledWith('/auth/login', {
+    expect(api.post).toHaveBeenCalledWith('/api/v1/auth/login', {
       username: 'test@example.com',
       password: 'password'
     });
@@ -168,7 +168,7 @@ describe('AuthContext', () => {
     });
 
     expect(localStorage.getItem('token')).toBe('new-token');
-    expect(api.post).toHaveBeenCalledWith('/auth/register', {
+    expect(api.post).toHaveBeenCalledWith('/api/v1/auth/register', {
       email: 'new@example.com',
       password: 'password'
     });
