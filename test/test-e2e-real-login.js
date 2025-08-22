@@ -285,7 +285,8 @@ async function testLoginBrowser() {
     // Fill login form
     console.log(info('📝 Filling login form...'));
     await page.type('input[name="email"], input[type="email"]', 'admin@example.com');
-    await page.type('input[name="password"], input[type="password"]', 'admin123');
+    await page.type('input[name="email"], input[type="email"]', ADMIN_EMAIL);
+    await page.type('input[name="password"], input[type="password"]', ADMIN_PASSWORD);
     
     // Submit form
     console.log(info('🚀 Submitting login...'));
