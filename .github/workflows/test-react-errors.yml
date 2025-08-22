@@ -1,0 +1,53 @@
+name: React Error Handling Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'templates/frontend-*/**'
+      - 'test/test-react-render-errors.js'
+      - '.github/workflows/test-react-errors.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install expect
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y expect
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install --no-save puppeteer
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Run React Error Handling Test
+        run: |
+          chmod +x test/test-react-render-errors.js
+          node test/test-react-render-errors.js
+        env:
+          CI: true
+
+      - name: Upload test artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-error-test-logs
+          path: |
+            test-output/**/logs/
+            test-output/**/*.log
