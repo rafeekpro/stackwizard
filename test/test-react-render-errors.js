@@ -27,6 +27,27 @@ const TEST_DIR = join(__dirname, '..', 'test-output', TEST_PROJECT_NAME);
 const FRONTEND_URL = 'http://localhost:3000';
 
 /**
+ * Wait for service to be ready
+ */
+async function waitForServiceReady(url, timeout = 30000, interval = 500) {
+  const startTime = Date.now();
+  
+  while (Date.now() - startTime < timeout) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        return true;
+      }
+    } catch (e) {
+      // Service not ready yet
+    }
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  
+  throw new Error(`Service at ${url} did not become ready within ${timeout}ms`);
+}
+
+/**
  * Clean up test environment
  */
 async function cleanup() {
@@ -383,6 +404,7 @@ if (!process.env.CI) {
     console.log(warning('\n⚠️  Puppeteer not installed. Installing for test...'));
     execSync('npm install --no-save puppeteer', { stdio: 'inherit' });
   }
+}
 // Ensure puppeteer is listed as a devDependency in package.json before running tests.
 
 // Run the tests
