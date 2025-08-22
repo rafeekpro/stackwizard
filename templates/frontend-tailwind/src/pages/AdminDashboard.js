@@ -42,15 +42,15 @@ const AdminDashboard = () => {
     setError(null);
     try {
       // Fetch system stats
-      const statsResponse = await api.get('/admin/stats');
+      const statsResponse = await api.get('/api/v1/admin/stats');
       setStats(statsResponse.data);
 
       // Fetch recent registrations
-      const recentResponse = await api.get('/admin/recent-registrations?limit=5');
+      const recentResponse = await api.get('/api/v1/admin/recent-registrations?limit=5');
       setRecentUsers(recentResponse.data);
 
       // Fetch audit log
-      const auditResponse = await api.get('/admin/audit-log?limit=10');
+      const auditResponse = await api.get('/api/v1/admin/audit-log?limit=10');
       setAuditLog(auditResponse.data.items || []);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);

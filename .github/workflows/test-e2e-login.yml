@@ -1,0 +1,54 @@
+name: E2E Login Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'templates/frontend-*/**'
+      - 'templates/common/backend/**'
+      - 'test/test-e2e-login.js'
+      - '.github/workflows/test-e2e-login.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install expect
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y expect
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install puppeteer
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Run E2E Login Test
+        run: |
+          chmod +x test/test-e2e-login.js
+          node test/test-e2e-login.js
+        env:
+          CI: true
+
+      - name: Upload test artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-logs
+          path: |
+            test-output/**/logs/
+            test-output/**/*.log
