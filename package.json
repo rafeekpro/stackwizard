@@ -82,7 +82,6 @@
   "devDependencies": {
     "axios": "^1.11.0",
     "eslint": "^9.33.0",
-    "prettier": "^3.6.2",
-    "puppeteer": "^21.0.0"
+    "prettier": "^3.6.2"
   }
 }

@@ -481,8 +481,15 @@ async function runTests() {
   }
 }
 
-// Puppeteer should be installed via package.json devDependencies
-// If not installed, the test will fail with a clear error message
+// Check if puppeteer is installed (only install if not in CI)
+if (!process.env.CI) {
+  try {
+    require.resolve('puppeteer');
+  } catch (e) {
+    console.log(warning('\n⚠️  Puppeteer not installed. Installing for local test...'));
+    execSync('npm install --no-save puppeteer', { stdio: 'inherit' });
+  }
+}
 
 // Run the tests
 runTests().catch(err => {

@@ -30,7 +30,9 @@ jobs:
           sudo apt-get install -y expect
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm install --no-save puppeteer
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
