@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Auth Context**: Fixed register and logout endpoints in AuthContext for both MUI and Tailwind templates
 - **Password Consistency**: Fixed admin password consistency across templates (now uses `admin123`)
 - **Environment Config**: Updated .env.example to match backend config defaults
+- **Admin User Creation**: Added username field to admin user initialization to fix OAuth2 login
+- **Items Table Migration**: Added missing migration for items table to fix 500 errors on items endpoints
 
 ### ✨ Improvements
 - **API Testing**: Added comprehensive API endpoint validation test covering 39 endpoints
