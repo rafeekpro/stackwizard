@@ -308,7 +308,7 @@ async function testLoginBrowser() {
     console.log(info('🚀 Submitting login...'));
     await Promise.all([
       page.click('button[type="submit"]'),
-      page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {})
+      page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(err => console.log(error('   Navigation error:'), err.message))
     ]);
     
     // Wait a bit for any errors
