@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await api.post('/auth/login', {
+      const response = await api.post('/api/v1/auth/login', {
         username: email, // Backend expects 'username' field
         password
       });
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await api.post('/auth/register', userData);
+      const response = await api.post('/api/v1/auth/register', userData);
 
       const { access_token, user: newUser } = response.data;
 
@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }) => {
 
     // Optional: Call logout endpoint
     if (api && api.post) {
-      api.post('/auth/logout').catch(() => {
+      api.post('/api/v1/auth/logout').catch(() => {
         // Ignore logout errors
       });
     }

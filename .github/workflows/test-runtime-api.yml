@@ -1,0 +1,46 @@
+name: Runtime API Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-runtime-api:
+    runs-on: ubuntu-latest
+    name: Test Runtime API Endpoints
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install expect
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y expect
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Run runtime API test
+      run: |
+        echo "Testing runtime API endpoints in generated project..."
+        chmod +x test/test-runtime-api.js
+        node test/test-runtime-api.js
+      env:
+        CI: true
+    
+    - name: Upload test results
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: runtime-api-test-results
+        path: test-output/
