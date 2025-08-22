@@ -10,6 +10,8 @@ import DashboardPage from './pages/DashboardPage';
 import UsersPage from './pages/UsersPage';
 import ItemsPage from './pages/ItemsPage';
 import AboutPage from './pages/AboutPage';
+import UnauthorizedPage from './pages/UnauthorizedPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route 
               path="/dashboard" 
               element={
@@ -32,6 +35,7 @@ function App() {
             <Route path="/users" element={<UsersPage />} />
             <Route path="/items" element={<ItemsPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       </div>

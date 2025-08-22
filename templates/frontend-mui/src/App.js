@@ -12,6 +12,8 @@ import UsersPage from './pages/UsersPage';
 import ItemsPage from './pages/ItemsPage';
 import AboutPage from './pages/AboutPage';
 import AdminDashboard from './pages/AdminDashboard';
+import UnauthorizedPage from './pages/UnauthorizedPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route 
               path="/dashboard" 
               element={
@@ -42,6 +45,7 @@ function App() {
                 </PrivateRoute>
               } 
             />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Box>
       </Box>
