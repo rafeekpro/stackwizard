@@ -12,7 +12,7 @@ on:
       - '.github/workflows/test-e2e-login.yml'
 
 jobs:
-  test:
+  e2e-login-test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 

@@ -11,7 +11,7 @@ on:
       - '.github/workflows/test-react-errors.yml'
 
 jobs:
-  test:
+  react-error-handling:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
