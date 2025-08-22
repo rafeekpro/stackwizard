@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 from app.api.v1.api import api_router
 from app.core.config import settings
 from app.db.init_db import init_db
+from app.db.database import get_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -61,6 +63,22 @@ def health_check():
         "version": settings.VERSION
     }
 
+@app.get("/health/db")
+def database_health_check(db: Session = Depends(get_db)):
+    """Database health check endpoint"""
+    try:
+        db.execute("SELECT 1")
+        return {
+            "status": "healthy",
+            "database": "connected"
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e)
+        }
+
 @app.get("/api/health")
 def api_health_check():
     """Health check endpoint for frontend"""
@@ -69,6 +87,22 @@ def api_health_check():
         "service": "stackwizard-backend",
         "version": settings.VERSION
     }
+
+@app.get("/api/health/db")
+def api_database_health_check(db: Session = Depends(get_db)):
+    """Database health check endpoint for frontend"""
+    try:
+        db.execute("SELECT 1")
+        return {
+            "status": "healthy",
+            "database": "connected"
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e)
+        }
 
 
 @app.get("/favicon.ico")
