@@ -481,13 +481,8 @@ async function runTests() {
   }
 }
 
-// Check if puppeteer is installed
-try {
-  require.resolve('puppeteer');
-} catch (e) {
-  console.log(warning('\n⚠️  Puppeteer not installed. Installing...'));
-  execSync('npm install puppeteer', { stdio: 'inherit' });
-}
+// Puppeteer should be installed via package.json devDependencies
+// If not installed, the test will fail with a clear error message
 
 // Run the tests
 runTests().catch(err => {
