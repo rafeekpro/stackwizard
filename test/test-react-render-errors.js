@@ -276,7 +276,10 @@ function validateErrorHandling() {
       
       // Check for direct object rendering
       if (content.includes('error.response?.data?.detail ||') && 
-          !content.includes('typeof error.response.data.detail')) {
+          !(
+            content.includes("typeof error.response.data.detail === 'string'") ||
+            content.includes('typeof error.response.data.detail === "string"')
+          )) {
         issues.push({
           file: `${template}/AuthContext.js`,
           issue: 'Missing type checking for error.response.data.detail',
