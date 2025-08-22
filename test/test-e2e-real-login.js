@@ -38,7 +38,7 @@ async function cleanup() {
           stdio: 'ignore'
         });
       } catch (e) {
-        // Ignore errors
+        console.log(warning('Warning: Docker cleanup failed:'), e.message);
       }
       await fs.remove(TEST_DIR);
     }
