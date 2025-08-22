@@ -14,7 +14,8 @@ import {
   ListItemIcon,
   Divider,
   Button,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -26,7 +27,6 @@ import {
   Settings as SettingsIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../services/api';
 
 const DashboardPage = () => {
   const { user } = useAuth();
@@ -35,14 +35,11 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      // Fetch user stats (if endpoint exists)
-      // For now, we'll use mock data or basic user info
-      setStats({
+    (async () => {
+      try {
+        // Fetch user stats (if endpoint exists)
+        // For now, we'll use mock data or basic user info
+        setStats({
         totalLogins: 42,
         lastLogin: new Date().toISOString(),
         accountAge: calculateAccountAge(user?.created_at),
@@ -60,7 +57,8 @@ const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+    })();
+  }, [user]);
 
   const calculateAccountAge = (createdAt) => {
     if (!createdAt) return '0 days';
@@ -80,6 +78,16 @@ const DashboardPage = () => {
       minute: '2-digit'
     });
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>

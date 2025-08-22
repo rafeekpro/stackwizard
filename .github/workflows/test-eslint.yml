@@ -1,0 +1,78 @@
+name: ESLint Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-eslint-mui:
+    runs-on: ubuntu-latest
+    name: Test ESLint - Material UI Template
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+    
+    - name: Generate MUI project
+      run: |
+        cd ${{ github.workspace }}
+        npm install
+        node src/index.js --quick --name test-mui-project --ui mui --skip-git
+    
+    - name: Install frontend dependencies
+      run: |
+        cd test-mui-project/frontend
+        npm install
+    
+    - name: Build frontend (includes ESLint check)
+      run: |
+        cd test-mui-project/frontend
+        CI=true npm run build
+      continue-on-error: false
+    
+    - name: Report ESLint results
+      if: failure()
+      run: |
+        echo "❌ ESLint found warnings or errors in MUI template"
+        echo "Please fix the issues before merging"
+
+  test-eslint-tailwind:
+    runs-on: ubuntu-latest
+    name: Test ESLint - Tailwind Template
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+    
+    - name: Generate Tailwind project
+      run: |
+        cd ${{ github.workspace }}
+        npm install
+        node src/index.js --quick --name test-tailwind-project --ui tailwind --skip-git
+    
+    - name: Install frontend dependencies
+      run: |
+        cd test-tailwind-project/frontend
+        npm install
+    
+    - name: Build frontend (includes ESLint check)
+      run: |
+        cd test-tailwind-project/frontend
+        CI=true npm run build
+      continue-on-error: false
+    
+    - name: Report ESLint results
+      if: failure()
+      run: |
+        echo "❌ ESLint found warnings or errors in Tailwind template"
+        echo "Please fix the issues before merging"
