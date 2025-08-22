@@ -35,7 +35,7 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    (async () => {
       try {
         // Fetch user stats (if endpoint exists)
         // For now, we'll use mock data or basic user info
@@ -57,10 +57,8 @@ const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-  
-  fetchDashboardData();
-}, [user]);
+    })();
+  }, [user]);
 
   const calculateAccountAge = (createdAt) => {
     if (!createdAt) return '0 days';
