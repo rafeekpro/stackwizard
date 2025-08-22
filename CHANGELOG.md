@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.8] - 2025-08-22
+
 ### 🐛 Bug Fixes
 - **Admin Endpoints**: Fixed admin API paths in frontend templates to include `/api/v1` prefix
 - **Frontend API Paths**: Corrected all admin dashboard API calls in both MUI and Tailwind templates
+- **Auth Endpoints**: Fixed authentication endpoint paths from `/auth/login` to `/api/v1/auth/login`
+- **Admin User Creation**: Added username field to admin user initialization to fix OAuth2 login
+- **Items Table Migration**: Added missing migration for items table to fix 500 errors
 
 ### ✨ Improvements  
 - **E2E Testing**: Added comprehensive end-to-end login test with Puppeteer
