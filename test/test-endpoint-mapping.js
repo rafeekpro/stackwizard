@@ -114,8 +114,9 @@ function extractBackendEndpoints() {
   const backendPath = join(__dirname, '..', 'templates', 'common', 'backend');
   const endpoints = [];
   
-  // Search for router definitions
-  const routerPattern = /@(app|router)\.(get|post|put|delete|patch)\(['"`]([^'"`]+)['"`]/g;
+  // Search for router definitions in Python FastAPI code
+  // Pattern matches decorators like @app.get("/path") or @router.post("/path")
+  const routerPattern = /@(app|router)\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g;
   
   function searchPythonFiles(dir) {
     const files = fs.readdirSync(dir);
@@ -134,7 +135,8 @@ function extractBackendEndpoints() {
         const prefix = prefixMatch ? prefixMatch[1] : '';
         
         let match;
-        const localRouterPattern = /@(app|router)\.(get|post|put|delete|patch)\(['"`]([^'"`]+)['"`]/g;
+        // Updated pattern to correctly match FastAPI decorators with optional whitespace
+        const localRouterPattern = /@(app|router)\.(get|post|put|delete|patch)\s*\(\s*['"`]([^'"`]+)['"`]/g;
         while ((match = localRouterPattern.exec(content)) !== null) {
           const method = match[2].toUpperCase();
           const path = match[3];
