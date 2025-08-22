@@ -117,7 +117,23 @@ function verifyAuthContextImplementation() {
     const loginMatch = content.match(/const login = async[\s\S]*?^  \}/m);
     if (loginMatch) {
       console.log(info('\nActual login implementation:'));
-      console.log(loginMatch[0].substring(0, 300) + '...');
+    // Robustly extract the login function implementation by counting braces
+    const loginStart = content.indexOf('const login = async');
+    if (loginStart !== -1) {
+      // Find the opening brace
+      const braceOpen = content.indexOf('{', loginStart);
+      if (braceOpen !== -1) {
+        let i = braceOpen + 1;
+        let braceCount = 1;
+        while (i < content.length && braceCount > 0) {
+          if (content[i] === '{') braceCount++;
+          else if (content[i] === '}') braceCount--;
+          i++;
+        }
+        const loginImpl = content.substring(loginStart, i);
+        console.log(info('\nActual login implementation:'));
+        console.log(loginImpl.substring(0, 300) + '...');
+      }
     }
     return false;
   }
