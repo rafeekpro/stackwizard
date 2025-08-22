@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.12] - 2025-08-22
+
+### 🚀 Release Summary
+Complete release with all React Router fixes and improvements from v1.0.11
+
+### Included Changes from v1.0.11
+- React Router v7 future flags configuration
+- Missing /unauthorized and 404 routes fixed
+- New error pages (UnauthorizedPage, NotFoundPage)
+- Comprehensive Router testing
+
+### 📦 Publishing
+- Official npm release of all accumulated fixes
+- Ensures all users get the latest improvements
+
 ## [1.0.11] - 2025-08-22
 
 ### 🐛 Bug Fixes
