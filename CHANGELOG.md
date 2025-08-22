@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.10] - 2025-08-22
+
+### 🐛 Critical Bug Fixes
+- **Login Authentication**: Fixed 422 error on login - frontend now correctly sends form-data instead of JSON
+- **OAuth2 Compatibility**: Updated AuthContext to use URLSearchParams for OAuth2PasswordRequestForm
+- **Content-Type**: Fixed Content-Type header to 'application/x-www-form-urlencoded' for login
+
+### ✨ Improvements
+- **Login Test**: Added comprehensive form-data login test
+- **Both Templates**: Fixed login in both Material UI and Tailwind CSS templates
+- **Authentication**: Ensured admin@example.com / admin123 credentials work correctly
+
 ## [1.0.9] - 2025-08-22
 
 ### 🐛 Bug Fixes

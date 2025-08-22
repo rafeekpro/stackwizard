@@ -71,10 +71,14 @@ describe('AuthContext', () => {
     });
 
     expect(localStorage.getItem('token')).toBe('test-token');
-    expect(api.post).toHaveBeenCalledWith('/api/v1/auth/login', {
-      username: 'test@example.com',
-      password: 'password'
-    });
+    // Check that URLSearchParams was used for form-data
+    expect(api.post).toHaveBeenCalledTimes(1);
+    const [[url, data, config]] = api.post.mock.calls;
+    expect(url).toBe('/api/v1/auth/login');
+    expect(data).toBeInstanceOf(URLSearchParams);
+    expect(data.get('username')).toBe('test@example.com');
+    expect(data.get('password')).toBe('password');
+    expect(config.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
   });
 
   it('should handle login failure', async () => {
