@@ -235,7 +235,9 @@ async function testBrowserWarnings() {
       waitUntil: 'networkidle2',
       timeout: 30000 
     }).catch(() => {
+    }).catch((err) => {
       console.log(warning('⚠️  /unauthorized route not accessible'));
+      console.log(warning('Error details:'), err && err.message ? err.message : err);
     });
     
     // Wait for any async warnings
