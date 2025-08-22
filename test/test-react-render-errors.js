@@ -104,7 +104,12 @@ async function startServices() {
     console.log(info('⏳ Waiting for services to be ready...'));
     
     // Wait for services to start
-    await new Promise(resolve => setTimeout(resolve, 15000));
+    try {
+      await waitForServiceReady(FRONTEND_URL, 30000, 500);
+    } catch (e) {
+      console.log(error('❌ Service did not become ready:'), e.message);
+      return false;
+    }
     
     return true;
   } catch (err) {
