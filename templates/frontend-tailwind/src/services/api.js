@@ -55,7 +55,9 @@ export default api;
 
 // API functions
 export const checkHealth = async (endpoint = '') => {
-  const response = await api.get(`/health${endpoint}`);
+  // Use absolute path to bypass baseURL since health endpoints are at root
+  const apiUrl = process.env.REACT_APP_API_URL?.replace('/api/v1', '') || 'http://localhost:8000';
+  const response = await axios.get(`${apiUrl}/api/health${endpoint}`);
   return response.data;
 };
 

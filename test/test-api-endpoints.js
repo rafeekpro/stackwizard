@@ -39,10 +39,10 @@ function extractFrontendAPICalls(templateType) {
   if (fs.existsSync(homePageFile)) {
     const content = fs.readFileSync(homePageFile, 'utf8');
     if (content.includes("checkHealth('/db')")) {
-      apiCalls.push('/health/db');
+      apiCalls.push('/api/health/db');
     }
     if (content.includes("checkHealth()")) {
-      apiCalls.push('/health');
+      apiCalls.push('/api/health');
     }
   }
   
@@ -71,7 +71,28 @@ function extractBackendRoutes() {
   if (fs.existsSync(apiV1File)) {
     const content = fs.readFileSync(apiV1File, 'utf8');
     
-    // Check for health router
+    // Check for routers - these define the actual API endpoints
+    if (content.includes('auth.router')) {
+      // Auth endpoints
+      routes.push('/api/v1/auth/register');
+      routes.push('/api/v1/auth/login');
+      routes.push('/api/v1/auth/logout');
+      routes.push('/api/v1/auth/refresh');
+    }
+    
+    if (content.includes('users.router')) {
+      // User endpoints
+      routes.push('/api/v1/users/');
+      routes.push('/api/v1/users/{user_id}');
+      routes.push('/api/v1/users/me');
+    }
+    
+    if (content.includes('items.router')) {
+      // Item endpoints
+      routes.push('/api/v1/items/');
+      routes.push('/api/v1/items/{item_id}');
+    }
+    
     if (content.includes('health.router')) {
       routes.push('/api/v1/health');
       routes.push('/api/v1/health/db');
