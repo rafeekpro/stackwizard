@@ -1,6 +1,6 @@
 {
   "name": "@rafeekpro/stackwizard",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "🧙‍♂️ Magical full-stack project generator with FastAPI, React, PostgreSQL, and Docker",
   "main": "src/index.js",
   "bin": {
