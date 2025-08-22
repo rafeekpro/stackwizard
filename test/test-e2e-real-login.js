@@ -417,7 +417,8 @@ if (!process.env.CI) {
     require.resolve('puppeteer');
   } catch (e) {
     console.log(warning('\n⚠️  Installing puppeteer for test...'));
-    execSync('npm install --no-save puppeteer', { stdio: 'inherit' });
+    console.log(warning('\n⚠️  Installing puppeteer@21.3.8 for test...'));
+    execSync('npm install --no-save puppeteer@21.3.8', { stdio: 'inherit' });
   }
 }
 
