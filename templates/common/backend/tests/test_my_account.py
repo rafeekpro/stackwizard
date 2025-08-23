@@ -2,9 +2,8 @@
 Tests for My Account functionality
 """
 import pytest
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.main import app
+from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 from app.models.user import User
 from app.models.item import Item
 from passlib.context import CryptContext
@@ -18,11 +17,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class TestMyAccount:
     """Test My Account endpoints"""
     
-    @pytest.mark.asyncio
-    async def test_get_user_stats(
+    def test_get_user_stats(
         self, 
-        client: AsyncClient, 
-        db: AsyncSession,
+        client: TestClient, 
+        db: Session,
         test_user: User,
         test_user_headers: dict
     ):
@@ -38,10 +36,10 @@ class TestMyAccount:
                 owner_id=test_user.id
             )
             db.add(item)
-        await db.commit()
+        db.commit()
         
         # Get stats
-        response = await client.get("/api/v1/users/me/stats", headers=test_user_headers)
+        response = client.get("/api/v1/users/me/stats", headers=test_user_headers)
         assert response.status_code == 200
         
         data = response.json()
@@ -53,17 +51,16 @@ class TestMyAccount:
         assert data["items_by_category"]["Books"] == 1
         assert data["account_age_days"] >= 0
     
-    @pytest.mark.asyncio
-    async def test_change_password(
+    def test_change_password(
         self, 
-        client: AsyncClient, 
-        db: AsyncSession,
+        client: TestClient, 
+        db: Session,
         test_user: User,
         test_user_headers: dict
     ):
         """Test password change functionality"""
         # Change password
-        response = await client.post(
+        response = client.post(
             "/api/v1/users/me/change-password",
             json={
                 "current_password": "testpass123",  # Default test password
@@ -75,7 +72,7 @@ class TestMyAccount:
         assert response.json()["message"] == "Password changed successfully"
         
         # Try to login with old password (should fail)
-        response = await client.post(
+        response = client.post(
             "/api/v1/auth/login",
             data={
                 "username": test_user.email,
@@ -86,7 +83,7 @@ class TestMyAccount:
         assert response.status_code == 401
         
         # Login with new password (should succeed)
-        response = await client.post(
+        response = client.post(
             "/api/v1/auth/login",
             data={
                 "username": test_user.email,
@@ -97,17 +94,16 @@ class TestMyAccount:
         assert response.status_code == 200
         assert "access_token" in response.json()
     
-    @pytest.mark.asyncio
-    async def test_change_password_wrong_current(
+    def test_change_password_wrong_current(
         self, 
-        client: AsyncClient, 
-        db: AsyncSession,
+        client: TestClient, 
+        db: Session,
         test_user: User,
         test_user_headers: dict
     ):
         """Test password change with wrong current password"""
         # Try to change password with wrong current password
-        response = await client.post(
+        response = client.post(
             "/api/v1/users/me/change-password",
             json={
                 "current_password": "wrongpassword",
@@ -118,22 +114,21 @@ class TestMyAccount:
         assert response.status_code == 400
         assert "Incorrect current password" in response.json()["detail"]
     
-    @pytest.mark.asyncio
-    async def test_deactivate_account(
+    def test_deactivate_account(
         self, 
-        client: AsyncClient, 
-        db: AsyncSession,
+        client: TestClient, 
+        db: Session,
         test_user: User,
         test_user_headers: dict
     ):
         """Test account deactivation"""
         # Deactivate account
-        response = await client.post("/api/v1/users/me/deactivate", headers=test_user_headers)
+        response = client.post("/api/v1/users/me/deactivate", headers=test_user_headers)
         assert response.status_code == 200
         assert response.json()["message"] == "Account deactivated successfully"
         
         # Try to login (should fail)
-        response = await client.post(
+        response = client.post(
             "/api/v1/auth/login",
             data={
                 "username": test_user.email,
@@ -143,11 +138,10 @@ class TestMyAccount:
         )
         assert response.status_code == 401
     
-    @pytest.mark.asyncio
-    async def test_export_user_data(
+    def test_export_user_data(
         self, 
-        client: AsyncClient, 
-        db: AsyncSession,
+        client: TestClient, 
+        db: Session,
         test_user: User,
         test_user_headers: dict
     ):
@@ -163,10 +157,10 @@ class TestMyAccount:
                 owner_id=test_user.id
             )
             db.add(item)
-        await db.commit()
+        db.commit()
         
         # Export data
-        response = await client.get("/api/v1/users/me/export", headers=test_user_headers)
+        response = client.get("/api/v1/users/me/export", headers=test_user_headers)
         assert response.status_code == 200
         
         # Check response headers
@@ -182,17 +176,16 @@ class TestMyAccount:
         assert data["items"][0]["title"] == "Export Test Item 0"
         assert "export_date" in data
     
-    @pytest.mark.asyncio
-    async def test_stats_no_items(
+    def test_stats_no_items(
         self, 
-        client: AsyncClient, 
-        db: AsyncSession,
+        client: TestClient, 
+        db: Session,
         test_user: User,
         test_user_headers: dict
     ):
         """Test user stats when user has no items"""
         # Get stats (should return zeros)
-        response = await client.get("/api/v1/users/me/stats", headers=test_user_headers)
+        response = client.get("/api/v1/users/me/stats", headers=test_user_headers)
         assert response.status_code == 200
         
         data = response.json()
@@ -201,8 +194,7 @@ class TestMyAccount:
         assert data["average_item_price"] == 0.0
         assert data["items_by_category"] == {}
     
-    @pytest.mark.asyncio
-    async def test_unauthenticated_access(self, client: AsyncClient):
+    def test_unauthenticated_access(self, client: TestClient):
         """Test that My Account endpoints require authentication"""
         endpoints = [
             ("/api/v1/users/me/stats", "GET"),
@@ -213,8 +205,8 @@ class TestMyAccount:
         
         for endpoint, method in endpoints:
             if method == "GET":
-                response = await client.get(endpoint)
+                response = client.get(endpoint)
             else:
-                response = await client.post(endpoint, json={})
+                response = client.post(endpoint, json={})
             
             assert response.status_code == 401, f"Endpoint {endpoint} should require auth"
