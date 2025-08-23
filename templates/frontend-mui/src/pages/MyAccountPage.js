@@ -78,10 +78,17 @@ function MyAccountPage() {
 
   const fetchUserStats = async () => {
     try {
-      const response = await api.get('/api/v1/users/me/stats');
+      const response = await api.get('/api/v1/users/me/statistics');
       setStats(response.data);
     } catch (error) {
       console.error('Failed to fetch user stats:', error);
+      // Set empty stats if request fails
+      setStats({
+        total_items: 0,
+        login_count: 0,
+        account_age_days: 0,
+        email_verified: false
+      });
     }
   };
 
@@ -360,10 +367,10 @@ function MyAccountPage() {
                 <Card>
                   <CardContent>
                     <Typography color="textSecondary" gutterBottom>
-                      Total Value
+                      Login Count
                     </Typography>
                     <Typography variant="h4">
-                      ${stats.total_value?.toFixed(2) || '0.00'}
+                      {stats.login_count || 0}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -373,10 +380,10 @@ function MyAccountPage() {
                 <Card>
                   <CardContent>
                     <Typography color="textSecondary" gutterBottom>
-                      Average Item Price
+                      Last Login
                     </Typography>
-                    <Typography variant="h4">
-                      ${stats.average_item_price?.toFixed(2) || '0.00'}
+                    <Typography variant="body1">
+                      {stats.last_login ? new Date(stats.last_login).toLocaleString() : 'Never'}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -390,6 +397,58 @@ function MyAccountPage() {
                     </Typography>
                     <Typography variant="h4">
                       {stats.account_age_days || 0} days
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom>
+                      Email Status
+                    </Typography>
+                    <Typography variant="h6">
+                      {stats.email_verified ? '✅ Verified' : '❌ Not Verified'}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom>
+                      Account Type
+                    </Typography>
+                    <Typography variant="h6">
+                      {stats.is_superuser ? '👑 Admin' : '👤 Regular User'}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom>
+                      Account Created
+                    </Typography>
+                    <Typography variant="body1">
+                      {stats.account_created ? new Date(stats.account_created).toLocaleDateString() : 'Unknown'}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <Typography color="textSecondary" gutterBottom>
+                      Account Status
+                    </Typography>
+                    <Typography variant="h6">
+                      {stats.is_active ? '✅ Active' : '⚠️ Inactive'}
                     </Typography>
                   </CardContent>
                 </Card>

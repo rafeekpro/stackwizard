@@ -1,10 +1,12 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 from uuid import UUID
 from datetime import datetime
+import json
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, func
 
 from app.core.dependencies import (
     get_current_active_user,
@@ -172,6 +174,85 @@ async def get_user_profile(
     Get detailed user profile (same as /me but more explicit)
     """
     return UserSchema.from_orm(current_user)
+
+@router.get("/me/statistics", response_model=Dict[str, Any])
+async def get_user_statistics(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """Get current user statistics"""
+    from app.models.item import Item
+    
+    # Get user's items count
+    items_result = await db.execute(
+        select(func.count(Item.id)).where(Item.owner_id == current_user.id)
+    )
+    items_count = items_result.scalar() or 0
+    
+    # Calculate account age
+    account_age = datetime.utcnow() - current_user.created_at
+    
+    return {
+        "total_items": items_count,
+        "login_count": current_user.login_count or 0,
+        "last_login": current_user.last_login_at.isoformat() if current_user.last_login_at else None,
+        "account_age_days": account_age.days,
+        "email_verified": current_user.is_verified,
+        "account_created": current_user.created_at.isoformat(),
+        "last_updated": current_user.updated_at.isoformat() if current_user.updated_at else None,
+        "is_active": current_user.is_active,
+        "is_superuser": current_user.is_superuser
+    }
+
+@router.get("/me/export")
+async def export_user_data(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """Export all user data as JSON"""
+    from app.models.item import Item
+    
+    # Get user's items
+    items_result = await db.execute(
+        select(Item).where(Item.owner_id == current_user.id)
+    )
+    items = items_result.scalars().all()
+    
+    export_data = {
+        "user": {
+            "id": str(current_user.id),
+            "email": current_user.email,
+            "username": current_user.username,
+            "full_name": current_user.full_name,
+            "is_active": current_user.is_active,
+            "is_verified": current_user.is_verified,
+            "is_superuser": current_user.is_superuser,
+            "created_at": current_user.created_at.isoformat(),
+            "updated_at": current_user.updated_at.isoformat() if current_user.updated_at else None,
+            "login_count": current_user.login_count,
+            "last_login": current_user.last_login_at.isoformat() if current_user.last_login_at else None
+        },
+        "items": [
+            {
+                "id": item.id,
+                "title": item.title,
+                "description": item.description,
+                "created_at": item.created_at.isoformat(),
+                "updated_at": item.updated_at.isoformat() if item.updated_at else None
+            }
+            for item in items
+        ],
+        "export_date": datetime.utcnow().isoformat(),
+        "total_items": len(items)
+    }
+    
+    
+    return JSONResponse(
+        content=export_data,
+        headers={
+            "Content-Disposition": f"attachment; filename=user_data_{current_user.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+        }
+    )
 
 # Email verification endpoints
 @router.post("/verify-email/{token}", response_model=MessageResponse)

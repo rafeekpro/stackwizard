@@ -1,0 +1,145 @@
+# GitHub Labels Configuration
+# Use with: gh label create --repo rafeekpro/stackwizard < .github/labels.yml
+
+# User Story & Task Management
+- name: "user-story"
+  color: "7057ff"
+  description: "User Story - high-level requirement"
+  
+- name: "task"
+  color: "0052cc"
+  description: "Development task"
+  
+- name: "epic"
+  color: "3e4b9e"
+  description: "Epic - collection of user stories"
+
+# Priority
+- name: "priority: critical"
+  color: "d73a4a"
+  description: "Critical priority - must be done ASAP"
+  
+- name: "priority: high"
+  color: "ff6b6b"
+  description: "High priority"
+  
+- name: "priority: medium"
+  color: "fbca04"
+  description: "Medium priority"
+  
+- name: "priority: low"
+  color: "0e8a16"
+  description: "Low priority"
+
+# Status
+- name: "status: backlog"
+  color: "cfd3d7"
+  description: "In backlog"
+  
+- name: "status: ready"
+  color: "bfdadc"
+  description: "Ready for development"
+  
+- name: "status: in-progress"
+  color: "2ea44f"
+  description: "Work in progress"
+  
+- name: "status: review"
+  color: "8b4789"
+  description: "In review"
+  
+- name: "status: blocked"
+  color: "d73a4a"
+  description: "Blocked by dependency"
+  
+- name: "status: done"
+  color: "0e8a16"
+  description: "Completed"
+
+# Story Points
+- name: "sp: 1"
+  color: "c5def5"
+  description: "1 story point"
+  
+- name: "sp: 2"
+  color: "c5def5"
+  description: "2 story points"
+  
+- name: "sp: 3"
+  color: "c5def5"
+  description: "3 story points"
+  
+- name: "sp: 5"
+  color: "c5def5"
+  description: "5 story points"
+  
+- name: "sp: 8"
+  color: "c5def5"
+  description: "8 story points"
+  
+- name: "sp: 13"
+  color: "c5def5"
+  description: "13 story points"
+
+# Categories
+- name: "frontend"
+  color: "d4c5f9"
+  description: "Frontend related"
+  
+- name: "backend"
+  color: "fef2c0"
+  description: "Backend related"
+  
+- name: "docker"
+  color: "006b75"
+  description: "Docker/DevOps related"
+  
+- name: "cli"
+  color: "5319e7"
+  description: "CLI generator related"
+  
+- name: "documentation"
+  color: "0075ca"
+  description: "Documentation improvements"
+  
+- name: "testing"
+  color: "a2eeef"
+  description: "Testing related"
+
+# Types
+- name: "bug"
+  color: "d73a4a"
+  description: "Something isn't working"
+  
+- name: "enhancement"
+  color: "a2eeef"
+  description: "New feature or request"
+  
+- name: "refactor"
+  color: "e99695"
+  description: "Code refactoring"
+  
+- name: "performance"
+  color: "f9d0c4"
+  description: "Performance improvement"
+  
+- name: "security"
+  color: "d73a4a"
+  description: "Security issue"
+
+# Process
+- name: "needs-refinement"
+  color: "d876e3"
+  description: "Needs more details or refinement"
+  
+- name: "needs-discussion"
+  color: "f9d0c4"
+  description: "Needs team discussion"
+  
+- name: "needs-triage"
+  color: "e99695"
+  description: "Needs priority assignment"
+  
+- name: "good-first-issue"
+  color: "7057ff"
+  description: "Good for newcomers"
