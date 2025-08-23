@@ -1,6 +1,6 @@
 from typing import Any, List, Optional
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -196,7 +196,7 @@ async def verify_email(
     
     # Verify email
     user.is_verified = True
-    user.email_verified_at = datetime.utcnow()
+    user.email_verified_at = datetime.now(timezone.utc)
     user.email_verification_token = None
     
     await db.commit()
@@ -351,7 +351,7 @@ async def update_user_by_admin(
     for field, value in update_data.items():
         setattr(user_to_update, field, value)
     
-    user_to_update.updated_at = datetime.utcnow()
+    user_to_update.updated_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(user_to_update)
     
@@ -439,7 +439,7 @@ async def get_user_statistics(
     stats = result.first()
     
     # Calculate account age
-    account_age_days = (datetime.utcnow() - current_user.created_at).days if current_user.created_at else 0
+    account_age_days = (datetime.now(timezone.utc) - current_user.created_at).days if current_user.created_at else 0
     
     # Get items by category if Item has category field
     category_query = select(
@@ -471,15 +471,15 @@ async def change_password(
     Change current user's password
     """
     # Verify current password
-    if not SecurityService.verify_password(password_data.current_password, current_user.hashed_password):
+    if not AuthService.verify_password(password_data.current_password, current_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect current password"
         )
     
     # Hash and set new password
-    current_user.hashed_password = SecurityService.hash_password(password_data.new_password)
-    current_user.password_changed_at = datetime.utcnow()
+    current_user.hashed_password = AuthService.hash_password(password_data.new_password)
+    current_user.password_changed_at = datetime.now(timezone.utc)
     
     await db.commit()
     
@@ -494,7 +494,7 @@ async def deactivate_account(
     Deactivate current user's account
     """
     current_user.is_active = False
-    current_user.deactivated_at = datetime.utcnow()
+    current_user.deactivated_at = datetime.now(timezone.utc)
     
     await db.commit()
     
@@ -537,7 +537,7 @@ async def export_user_data(
             }
             for item in items
         ],
-        "export_date": datetime.utcnow().isoformat()
+        "export_date": datetime.now(timezone.utc).isoformat()
     }
     
     return JSONResponse(
