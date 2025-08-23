@@ -27,8 +27,6 @@ function Navbar() {
   ];
 
   const authenticatedPages = [
-    { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
     { name: 'Users', path: '/users' },
     { name: 'Items', path: '/items' },
     { name: 'My Account', path: '/my-account' },

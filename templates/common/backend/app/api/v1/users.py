@@ -1,6 +1,6 @@
 from typing import Any, List, Optional, Dict
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
@@ -246,11 +246,10 @@ async def export_user_data(
         "total_items": len(items)
     }
     
-    
     return JSONResponse(
         content=export_data,
         headers={
-            "Content-Disposition": f"attachment; filename=user_data_{current_user.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+            "Content-Disposition": f"attachment; filename=user_data_{current_user.id}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
         }
     )
 
