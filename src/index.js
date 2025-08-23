@@ -357,7 +357,7 @@ coverage/
             { cwd: projectPath }
           );
           spinner.text = 'Git repository initialized';
-        } catch (gitError) {
+        } catch {
           spinner.warn(
             chalk.yellow(
               'Git initialization failed (git might not be installed)'
@@ -373,7 +373,7 @@ coverage/
           await execAsync('pip install -r requirements.txt', {
             cwd: path.join(projectPath, 'backend'),
           });
-        } catch (e) {
+        } catch {
           spinner.warn(
             chalk.yellow(
               'Backend dependencies installation skipped (Python/pip not available)'
@@ -386,7 +386,7 @@ coverage/
           await execAsync('npm install', {
             cwd: path.join(projectPath, 'frontend'),
           });
-        } catch (e) {
+        } catch {
           spinner.warn(
             chalk.yellow('Frontend dependencies installation skipped')
           );
