@@ -14,6 +14,7 @@ import AboutPage from './pages/AboutPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import NotFoundPage from './pages/NotFoundPage';
+import MyAccountPage from './pages/MyAccountPage';
 
 function App() {
   return (
@@ -37,6 +38,14 @@ function App() {
             <Route path="/users" element={<UsersPage />} />
             <Route path="/items" element={<ItemsPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route 
+              path="/my-account" 
+              element={
+                <PrivateRoute>
+                  <MyAccountPage />
+                </PrivateRoute>
+              } 
+            />
             <Route 
               path="/admin" 
               element={
