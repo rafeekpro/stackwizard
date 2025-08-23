@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Docker Compose Fixes
+- **Fixed duplicate alembic migrations** - Removed alembic command from Dockerfile CMD
+- **Fixed netcat compatibility** - Changed from `nc.traditional` to `nc` in docker-compose
+- **Fixed netcat package** - Switched from `netcat-traditional` to `netcat-openbsd` 
+- **Fixed bcrypt warning** - Added explicit `bcrypt==4.0.1` to requirements.txt
+- **Fixed uvicorn reload** - Added `--workers 1` flag to prevent reload issues
+
+### 🧪 Comprehensive Testing Suite
+- **NPM Package Files Test** (`test/test-npm-package-files.js`)
+  - Verifies all critical template files are included in npm package
+  - Prevents "only frontend folder" issue
+  - Runs automatically before npm publish via `prepublishOnly` hook
+- **Generated Structure Test** (`test/test-generated-structure.js`)
+  - Verifies complete project structure generation
+  - Checks all directories and files are created
+  - Validates placeholder replacements
+- **Docker Integration Test** (`test/test-docker-compose.js`)
+  - Generates test project and runs docker-compose
+  - Waits for services health checks
+  - Tests API endpoints including login
+  - Validates no critical errors in logs
+
+### ⚡ CI/CD Optimizations
+- **Essential CI Workflow** (`ci-essential.yml`)
+  - Runs only critical tests on every PR (~2-3 minutes)
+  - Conditional tests based on changed files
+  - 80% reduction in CI time for most PRs
+- **Smart Test Execution**
+  - Backend tests only when backend files change
+  - Frontend tests only when frontend files change
+  - Docker tests only when Docker files change
+- **Manual Test Triggers**
+  - Added `workflow_dispatch` for manual testing
+  - Support for `test:all` label to run full suite
+
+### 📚 Documentation
+- **Branch Protection Guide** (`.github/branch-protection.md`)
+  - Clear documentation of required vs optional tests
+  - Configuration instructions for GitHub
+  - Test optimization rationale
+
 ## [1.0.14] - 2025-08-23
 
 ### 🐛 Critical Bug Fix
