@@ -31,6 +31,9 @@ jobs:
       - name: Test NPM package file inclusion
         run: npm run test:package
         
+      - name: Test generated project structure
+        run: npm run test:structure
+        
       - name: Verify package can be created
         run: |
           npm pack --dry-run
