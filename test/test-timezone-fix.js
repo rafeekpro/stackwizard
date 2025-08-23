@@ -101,19 +101,19 @@ async function testTimezoneEndpoints() {
       throw new Error(`Export endpoint failed: ${exportData.detail}`);
     }
     
-    log('\\n' + '='.repeat(50), 'green');
+    log('\n' + '='.repeat(50), 'green');
     log('✅ ALL TIMEZONE TESTS PASSED!', 'green');
     log('='.repeat(50), 'green');
     
   } catch (error) {
-    log('\\n' + '='.repeat(50), 'red');
+    log('\n' + '='.repeat(50), 'red');
     log('❌ TIMEZONE TEST FAILED', 'red');
     log(error.message, 'red');
     log('='.repeat(50), 'red');
     process.exit(1);
   } finally {
     // Cleanup
-    log('\\nCleaning up...', 'yellow');
+    log('\nCleaning up...', 'yellow');
     try {
       execSync('docker compose down -v', { cwd: projectDir });
       fs.rmSync(projectDir, { recursive: true, force: true });
