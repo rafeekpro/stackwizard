@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.16] - 2025-08-23
+
+### 🐛 Bug Fixes
+- **Fixed navigation auth state** - Navigation menu now properly updates after login/logout
+  - Added authentication logic to Tailwind navbar component
+  - Backend now returns user data with authentication tokens
+  - Fixed UserSchema to include all required fields (is_verified, login_count)
+  - Created separate RegisterResponse schema for registration endpoint
+- **Fixed backend tests** - All 77 backend tests now passing
+  - Fixed ResponseValidationError in auth endpoints
+  - Updated schemas to match User model requirements
+
+### ✨ New Features
+- **Comprehensive navigation authentication tests**
+  - Added E2E tests for navigation state changes
+  - Tests both Material UI and Tailwind templates
+  - Prevents regression of auth state bugs
+
 ## [1.0.15] - 2025-08-23
 
 ### 🐛 Docker Compose Fixes
