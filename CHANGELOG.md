@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.14] - 2025-08-23
+
+### 🐛 Critical Bug Fix
+- **NPM Package Generation**: Fixed critical issue where npm package only generated frontend folder
+  - Root cause: `.npmignore` was excluding essential template files (.env.example, .github, *.md)
+  - Added exceptions to include template files needed for project generation
+  - Verified all components (backend, database, docker-compose) are now included
+
+### 🔧 Technical Details
+- Modified `.npmignore` to exclude `.env` files but include `templates/**/.env.example`
+- Modified `.npmignore` to exclude `.github` but include `templates/**/.github/`
+- Modified `.npmignore` to exclude `*.md` but include `templates/**/*.md`
+
 ## [1.0.13] - 2025-08-23
 
 ### ✨ New Features
