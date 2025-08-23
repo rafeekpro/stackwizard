@@ -81,8 +81,15 @@ class UserInDB(UserInDBBase):
     email_verified_at: Optional[datetime] = None
 
 # Authentication schemas
-class UserSchema(User):
-    id: Optional[str] = None
+class UserSchema(BaseModel):
+    id: str
+    email: str
+    username: Optional[str] = None
+    full_name: Optional[str] = None
+    is_superuser: bool = False
+    is_active: bool = True
+    is_verified: bool = False
+    login_count: int = 0
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 class Token(BaseModel):
@@ -98,6 +105,10 @@ class TokenWithUser(BaseModel):
     refresh_token: Optional[str] = None
     user: Optional[UserSchema] = None
     message: Optional[str] = None
+
+class RegisterResponse(BaseModel):
+    user: UserSchema
+    message: str
 
 class TokenData(BaseModel):
     user_id: Optional[UUID] = None

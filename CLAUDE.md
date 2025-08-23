@@ -129,7 +129,7 @@ Templates use placeholder variables replaced during generation:
 
 After generation, verify the project works:
 
-1. **Start services**: `docker-compose up -d`
+1. **Start services**: `docker compose up -d`
 2. **Check health**: Visit frontend URL and verify API/DB status
 3. **Test CRUD**: Create, read, update, delete users and items
 4. **API docs**: Visit `/api/docs` for interactive API testing

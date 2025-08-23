@@ -13,7 +13,7 @@ from app.models.user import User
 from app.schemas.user import (
     Token, TokenWithUser, UserLogin, UserRegister, User as UserSchema,
     PasswordResetRequest, PasswordReset, MessageResponse,
-    UserResponse
+    UserResponse, RegisterResponse
 )
 from app.services.auth import AuthService, SecurityService
 
@@ -72,6 +72,8 @@ async def login(
             "full_name": user.full_name,
             "is_superuser": user.is_superuser,
             "is_active": user.is_active,
+            "is_verified": user.is_verified,
+            "login_count": user.login_count,
             "created_at": user.created_at.isoformat() if user.created_at else None,
             "updated_at": user.updated_at.isoformat() if user.updated_at else None
         }
@@ -138,7 +140,7 @@ async def login_json(
         }
     }
 
-@router.post("/register", response_model=TokenWithUser)
+@router.post("/register", response_model=RegisterResponse)
 async def register(
     user_data: UserRegister,
     db: AsyncSession = Depends(get_async_db)
@@ -207,6 +209,8 @@ async def register(
             "full_name": db_user.full_name,
             "is_superuser": db_user.is_superuser,
             "is_active": db_user.is_active,
+            "is_verified": db_user.is_verified,
+            "login_count": db_user.login_count,
             "created_at": db_user.created_at.isoformat() if db_user.created_at else None,
             "updated_at": db_user.updated_at.isoformat() if db_user.updated_at else None
         },
