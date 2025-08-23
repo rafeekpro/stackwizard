@@ -458,7 +458,7 @@ async def get_user_statistics(
         average_item_price=float(stats.average_price or 0),
         items_by_category=items_by_category,
         account_age_days=account_age_days,
-        last_login=current_user.last_login
+        last_login=current_user.last_login_at
     )
 
 @router.post("/me/change-password", response_model=MessageResponse)

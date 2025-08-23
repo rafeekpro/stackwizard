@@ -64,7 +64,7 @@ class TestMyAccount:
             "/api/v1/users/me/change-password",
             json={
                 "current_password": "testpass123",  # Default test password
-                "new_password": "newpassword123"
+                "new_password": "NewPassword123"
             },
             headers=test_headers
         )
@@ -87,7 +87,7 @@ class TestMyAccount:
             "/api/v1/auth/login",
             data={
                 "username": test_user.email,
-                "password": "newpassword123"
+                "password": "NewPassword123"
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"}
         )
@@ -107,7 +107,7 @@ class TestMyAccount:
             "/api/v1/users/me/change-password",
             json={
                 "current_password": "wrongpassword",
-                "new_password": "newpassword123"
+                "new_password": "NewPassword123"
             },
             headers=test_headers
         )
