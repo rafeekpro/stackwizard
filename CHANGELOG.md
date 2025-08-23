@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.17] - 2025-08-23
+
+### 🐛 Bug Fixes
+- **Fixed Items page display** - Items page now shows sample data after initialization
+  - Added `create_sample_items()` function in backend initialization
+  - Creates 3 sample items (Laptop, Mouse, Keyboard) for demo purposes
+- **Fixed My Account Statistics** - Statistics tab now displays real user data
+  - Added `/api/v1/users/me/statistics` endpoint
+  - Shows total items, login count, last login, account age, verification status
+  - Frontend fetches and displays actual statistics from API
+- **Fixed Export Data functionality** - Export button now works correctly
+  - Fixed `/api/v1/users/me/export` endpoint
+  - Returns complete user profile and items in JSON format
+  - Sets proper Content-Disposition header for file download
+
+### ✨ New Features
+- **Azure DevOps Integration** - Complete hybrid workflow support
+  - Setup script for Azure DevOps + GitHub integration
+  - Migration tool for GitHub issues to Azure work items
+  - Automatic work item status sync with pull requests
+  - Comprehensive developer workflow documentation
+- **Functional Tests** - Added comprehensive test suite for all fixes
+  - Tests both Material UI and Tailwind templates
+  - Verifies items display, statistics, and export functionality
+  - Uses Puppeteer for browser automation
+  - Docker Compose integration testing
+
+### 🔧 Improvements
+- **Test Maintainability** - Refactored test code for better organization
+  - Extracted code templates into separate files
+  - Improved test structure and reusability
+  - Fixed CommonJS compatibility issues
+
 ## [1.0.16] - 2025-08-23
 
 ### 🐛 Bug Fixes
