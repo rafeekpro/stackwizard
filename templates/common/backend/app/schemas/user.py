@@ -174,3 +174,16 @@ class AdminUserUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_superuser: Optional[bool] = None
     is_verified: Optional[bool] = None
+
+# MyAccount schemas
+class UserStats(BaseModel):
+    total_items: int = 0
+    total_value: float = 0.0
+    average_item_price: float = 0.0
+    items_by_category: dict = {}
+    account_age_days: int = 0
+    last_login: Optional[datetime] = None
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(..., min_length=8)
+    new_password: str = Field(..., min_length=8)

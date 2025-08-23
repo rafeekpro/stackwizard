@@ -12,6 +12,11 @@ class Item(Base):
     title = Column(String, index=True, nullable=False)
     description = Column(String)
     price = Column(Float)
+    category = Column(String, index=True)
+    stock_quantity = Column(Integer, default=0)
+    image_url = Column(String)
+    rating = Column(Float)
+    tags = Column(String)  # Store as JSON string
     is_available = Column(Boolean, default=True)
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())

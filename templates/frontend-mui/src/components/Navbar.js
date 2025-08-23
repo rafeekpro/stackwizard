@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Box,
@@ -13,17 +13,28 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AdbIcon from '@mui/icons-material/Adb';
-
-const pages = [
-  { name: 'Home', path: '/' },
-  { name: 'Users', path: '/users' },
-  { name: 'Items', path: '/items' },
-  { name: 'Admin', path: '/admin' },
-  { name: 'About', path: '/about' },
-];
+import { useAuth } from '../contexts/AuthContext';
 
 function Navbar() {
   const [anchorElNav, setAnchorElNav] = useState(null);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Define navigation items based on authentication status
+  const publicPages = [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+  ];
+
+  const authenticatedPages = [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'Users', path: '/users' },
+    { name: 'Items', path: '/items' },
+    { name: 'My Account', path: '/my-account' },
+  ];
+
+  const pages = user ? authenticatedPages : publicPages;
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -31,6 +42,19 @@ function Navbar() {
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const handleSignIn = () => {
+    navigate('/login');
+  };
+
+  const handleSignUp = () => {
+    navigate('/register');
   };
 
   return (
@@ -56,6 +80,7 @@ function Navbar() {
             FULLSTACK
           </Typography>
 
+          {/* Mobile Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
@@ -95,6 +120,21 @@ function Navbar() {
                   <Typography textAlign="center">{page.name}</Typography>
                 </MenuItem>
               ))}
+              {/* Mobile Auth Buttons */}
+              {!user ? (
+                <>
+                  <MenuItem onClick={handleSignIn}>
+                    <Typography textAlign="center">Sign In</Typography>
+                  </MenuItem>
+                  <MenuItem onClick={handleSignUp}>
+                    <Typography textAlign="center">Sign Up</Typography>
+                  </MenuItem>
+                </>
+              ) : (
+                <MenuItem onClick={handleLogout}>
+                  <Typography textAlign="center">Logout</Typography>
+                </MenuItem>
+              )}
             </Menu>
           </Box>
           
@@ -118,18 +158,51 @@ function Navbar() {
             FULLSTACK
           </Typography>
           
+          {/* Desktop Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
               <Button
                 key={page.name}
                 component={RouterLink}
                 to={page.path}
-                onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
                 {page.name}
               </Button>
             ))}
+          </Box>
+
+          {/* Desktop Auth Buttons */}
+          <Box sx={{ flexGrow: 0, display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+            {!user ? (
+              <>
+                <Button 
+                  color="inherit" 
+                  onClick={handleSignIn}
+                  variant="outlined"
+                  sx={{ borderColor: 'white' }}
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  color="inherit" 
+                  onClick={handleSignUp}
+                  variant="contained"
+                  sx={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                >
+                  Sign Up
+                </Button>
+              </>
+            ) : (
+              <Button 
+                color="inherit" 
+                onClick={handleLogout}
+                variant="outlined"
+                sx={{ borderColor: 'white' }}
+              >
+                Logout
+              </Button>
+            )}
           </Box>
         </Toolbar>
       </Container>

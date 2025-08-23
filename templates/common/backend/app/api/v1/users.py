@@ -21,7 +21,9 @@ from app.schemas.user import (
     UserResponse,
     MessageResponse,
     AdminUserUpdate,
-    AdminUserCreate
+    AdminUserCreate,
+    UserStats,
+    PasswordChangeRequest
 )
 from app.services.auth import AuthService, SecurityService
 
@@ -413,3 +415,134 @@ async def resend_verification_email(
     # await send_email_verification(current_user.email, current_user.email_verification_token)
     
     return MessageResponse(message="Verification email sent")
+
+# New MyAccount endpoints
+@router.get("/me/stats", response_model=UserStats)
+async def get_user_statistics(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Get current user statistics
+    """
+    from app.models.item import Item
+    from sqlalchemy import func
+    
+    # Get user's items statistics
+    items_query = select(
+        func.count(Item.id).label('total_items'),
+        func.sum(Item.price).label('total_value'),
+        func.avg(Item.price).label('average_price')
+    ).where(Item.owner_id == current_user.id)
+    
+    result = await db.execute(items_query)
+    stats = result.first()
+    
+    # Calculate account age
+    account_age_days = (datetime.utcnow() - current_user.created_at).days if current_user.created_at else 0
+    
+    # Get items by category if Item has category field
+    category_query = select(
+        Item.category,
+        func.count(Item.id).label('count')
+    ).where(
+        Item.owner_id == current_user.id
+    ).group_by(Item.category)
+    
+    category_result = await db.execute(category_query)
+    items_by_category = {row.category: row.count for row in category_result if row.category}
+    
+    return UserStats(
+        total_items=stats.total_items or 0,
+        total_value=float(stats.total_value or 0),
+        average_item_price=float(stats.average_price or 0),
+        items_by_category=items_by_category,
+        account_age_days=account_age_days,
+        last_login=current_user.last_login
+    )
+
+@router.post("/me/change-password", response_model=MessageResponse)
+async def change_password(
+    password_data: PasswordChangeRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Change current user's password
+    """
+    # Verify current password
+    if not SecurityService.verify_password(password_data.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect current password"
+        )
+    
+    # Hash and set new password
+    current_user.hashed_password = SecurityService.hash_password(password_data.new_password)
+    current_user.password_changed_at = datetime.utcnow()
+    
+    await db.commit()
+    
+    return MessageResponse(message="Password changed successfully")
+
+@router.post("/me/deactivate", response_model=MessageResponse)
+async def deactivate_account(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Deactivate current user's account
+    """
+    current_user.is_active = False
+    current_user.deactivated_at = datetime.utcnow()
+    
+    await db.commit()
+    
+    return MessageResponse(message="Account deactivated successfully")
+
+@router.get("/me/export")
+async def export_user_data(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+) -> Any:
+    """
+    Export all user data as JSON
+    """
+    from app.models.item import Item
+    from fastapi.responses import JSONResponse
+    
+    # Get user's items
+    items_query = select(Item).where(Item.owner_id == current_user.id)
+    items_result = await db.execute(items_query)
+    items = items_result.scalars().all()
+    
+    # Prepare export data
+    export_data = {
+        "user": {
+            "id": str(current_user.id),
+            "email": current_user.email,
+            "username": current_user.username,
+            "full_name": current_user.full_name,
+            "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+            "is_active": current_user.is_active,
+            "is_verified": current_user.is_verified
+        },
+        "items": [
+            {
+                "id": item.id,
+                "title": item.title,
+                "description": item.description,
+                "price": float(item.price) if item.price else 0,
+                "created_at": item.created_at.isoformat() if hasattr(item, 'created_at') and item.created_at else None
+            }
+            for item in items
+        ],
+        "export_date": datetime.utcnow().isoformat()
+    }
+    
+    return JSONResponse(
+        content=export_data,
+        headers={
+            "Content-Disposition": f"attachment; filename=user_data_{current_user.id}.json"
+        }
+    )
