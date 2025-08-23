@@ -81,16 +81,10 @@ class UserInDB(UserInDBBase):
     email_verified_at: Optional[datetime] = None
 
 # Authentication schemas
-class UserSchema(BaseModel):
-    id: str
-    email: str
-    username: Optional[str] = None
-    full_name: Optional[str] = None
-    is_superuser: bool = False
-    is_active: bool = True
+class UserSchema(User):
+    id: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
-
 class Token(BaseModel):
     access_token: str
     token_type: str
