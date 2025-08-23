@@ -248,6 +248,13 @@ program
       await fs.writeFile(envExampleDest, envContent);
       await fs.writeFile(envDest, envContent);
 
+      spinner.text = 'Setting up GitHub Actions workflows...';
+      const githubSrc = path.join(TEMPLATES_DIR, 'common', '.github');
+      const githubDest = path.join(projectPath, '.github');
+      if (await fs.pathExists(githubSrc)) {
+        await fs.copy(githubSrc, githubDest);
+      }
+
       // Create uploads directory for backend
       spinner.text = 'Creating uploads directory...';
       const uploadsDir = path.join(projectPath, 'uploads');
