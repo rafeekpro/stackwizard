@@ -28,17 +28,17 @@ class AdminService:
         total_users = total_users_result.scalar() or 0
         
         active_users_result = await db.execute(
-            select(func.count(User.id)).where(User.is_active == True)
+            select(func.count(User.id)).where(User.is_active.is_(True))
         )
         active_users = active_users_result.scalar() or 0
         
         verified_users_result = await db.execute(
-            select(func.count(User.id)).where(User.is_verified == True)
+            select(func.count(User.id)).where(User.is_verified.is_(True))
         )
         verified_users = verified_users_result.scalar() or 0
         
         admin_users_result = await db.execute(
-            select(func.count(User.id)).where(User.is_superuser == True)
+            select(func.count(User.id)).where(User.is_superuser.is_(True))
         )
         admin_users = admin_users_result.scalar() or 0
         
