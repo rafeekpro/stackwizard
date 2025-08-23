@@ -197,30 +197,9 @@ async def register(
     # TODO: Send email verification email here
     # await send_email_verification(db_user.email, email_verification_token)
     
-    # Create access token for immediate login
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    
-    # Create access token with scopes
-    scopes = ["read", "write"]
-    if db_user.is_superuser:
-        scopes.append("admin")
-    
-    access_token = AuthService.create_access_token(
-        data={"sub": str(db_user.id)},
-        expires_delta=access_token_expires,
-        scopes=scopes
-    )
-    
-    # Create refresh token
-    refresh_token = AuthService.create_refresh_token(
-        data={"sub": str(db_user.id)}
-    )
+    # Do not create access or refresh tokens until email is verified
     
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        "refresh_token": refresh_token,
         "user": {
             "id": str(db_user.id),
             "email": db_user.email,
