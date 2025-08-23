@@ -416,7 +416,6 @@ async def resend_verification_email(
     
     return MessageResponse(message="Verification email sent")
 
-# New MyAccount endpoints
 @router.get("/me/stats", response_model=UserStats)
 async def get_user_statistics(
     current_user: User = Depends(get_current_active_user),
