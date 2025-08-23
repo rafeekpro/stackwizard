@@ -22,7 +22,7 @@ class TestMyAccount:
         client: TestClient, 
         db: Session,
         test_user: User,
-        test_user_headers: dict
+        test_headers: dict
     ):
         """Test getting user statistics"""
         # Create some items for the user
@@ -39,7 +39,7 @@ class TestMyAccount:
         db.commit()
         
         # Get stats
-        response = client.get("/api/v1/users/me/stats", headers=test_user_headers)
+        response = client.get("/api/v1/users/me/stats", headers=test_headers)
         assert response.status_code == 200
         
         data = response.json()
@@ -56,7 +56,7 @@ class TestMyAccount:
         client: TestClient, 
         db: Session,
         test_user: User,
-        test_user_headers: dict
+        test_headers: dict
     ):
         """Test password change functionality"""
         # Change password
@@ -66,7 +66,7 @@ class TestMyAccount:
                 "current_password": "testpass123",  # Default test password
                 "new_password": "newpassword123"
             },
-            headers=test_user_headers
+            headers=test_headers
         )
         assert response.status_code == 200
         assert response.json()["message"] == "Password changed successfully"
@@ -99,7 +99,7 @@ class TestMyAccount:
         client: TestClient, 
         db: Session,
         test_user: User,
-        test_user_headers: dict
+        test_headers: dict
     ):
         """Test password change with wrong current password"""
         # Try to change password with wrong current password
@@ -109,7 +109,7 @@ class TestMyAccount:
                 "current_password": "wrongpassword",
                 "new_password": "newpassword123"
             },
-            headers=test_user_headers
+            headers=test_headers
         )
         assert response.status_code == 400
         assert "Incorrect current password" in response.json()["detail"]
@@ -119,11 +119,11 @@ class TestMyAccount:
         client: TestClient, 
         db: Session,
         test_user: User,
-        test_user_headers: dict
+        test_headers: dict
     ):
         """Test account deactivation"""
         # Deactivate account
-        response = client.post("/api/v1/users/me/deactivate", headers=test_user_headers)
+        response = client.post("/api/v1/users/me/deactivate", headers=test_headers)
         assert response.status_code == 200
         assert response.json()["message"] == "Account deactivated successfully"
         
@@ -143,7 +143,7 @@ class TestMyAccount:
         client: TestClient, 
         db: Session,
         test_user: User,
-        test_user_headers: dict
+        test_headers: dict
     ):
         """Test user data export"""
         # Create some items
@@ -160,7 +160,7 @@ class TestMyAccount:
         db.commit()
         
         # Export data
-        response = client.get("/api/v1/users/me/export", headers=test_user_headers)
+        response = client.get("/api/v1/users/me/export", headers=test_headers)
         assert response.status_code == 200
         
         # Check response headers
@@ -181,11 +181,11 @@ class TestMyAccount:
         client: TestClient, 
         db: Session,
         test_user: User,
-        test_user_headers: dict
+        test_headers: dict
     ):
         """Test user stats when user has no items"""
         # Get stats (should return zeros)
-        response = client.get("/api/v1/users/me/stats", headers=test_user_headers)
+        response = client.get("/api/v1/users/me/stats", headers=test_headers)
         assert response.status_code == 200
         
         data = response.json()
