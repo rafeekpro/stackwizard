@@ -6,7 +6,7 @@ async def export_user_data(
     """Export all user data"""
     from fastapi.responses import JSONResponse
     from app.models.item import Item
-    from datetime import datetime
+    from datetime import datetime, timezone
     import json
     
     # Get user's items
@@ -35,7 +35,7 @@ async def export_user_data(
             }
             for item in items
         ],
-        "export_date": datetime.utcnow().isoformat()
+        "export_date": datetime.now(timezone.utc).isoformat()
     }
     
     return JSONResponse(

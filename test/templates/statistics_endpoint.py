@@ -4,7 +4,7 @@ async def get_user_statistics(
     db: AsyncSession = Depends(get_async_db)
 ) -> Any:
     """Get current user statistics"""
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
     from sqlalchemy import func, select
     from app.models.item import Item
     
@@ -14,8 +14,9 @@ async def get_user_statistics(
     )
     items_count = items_result.scalar() or 0
     
-    # Calculate account age
-    account_age = datetime.utcnow() - current_user.created_at
+    # Calculate account age - use timezone-aware datetime
+    now = datetime.now(timezone.utc)
+    account_age = now - current_user.created_at
     
     return {
         "total_items": items_count,
