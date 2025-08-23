@@ -3,10 +3,16 @@ name: React Router Issues Test
 on:
   push:
     branches: [main]
+    paths:
+      - 'templates/frontend-*/**'
+      - 'test/test-react-router-issues.js'
   pull_request:
     branches: [main]
-    # Always run on PRs to main to ensure nothing is broken
-    # This is a required test for branch protection
+    paths:
+      - 'templates/frontend-*/**'
+      - 'test/test-react-router-issues.js'
+      - '.github/workflows/test-react-router.yml'
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   react-router-test:

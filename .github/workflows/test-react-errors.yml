@@ -3,12 +3,16 @@ name: React Error Handling Test
 on:
   push:
     branches: [main]
+    paths:
+      - 'templates/frontend-*/**'
+      - 'test/test-react-render-errors.js'
   pull_request:
     branches: [main]
-    # Always run on PRs to main to ensure nothing is broken
-    # Previously had path filters but they prevented the test from running
-    # when other files were changed. Since this is a required test,
-    # it should run on all PRs to catch any regressions.
+    paths:
+      - 'templates/frontend-*/**'
+      - 'test/test-react-render-errors.js'
+      - '.github/workflows/test-react-errors.yml'
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   react-error-handling:
