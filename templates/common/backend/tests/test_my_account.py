@@ -7,7 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.main import app
 from app.models.user import User
 from app.models.item import Item
-from app.core.security import SecurityService
+from passlib.context import CryptContext
+
+# Password hashing setup
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 from tests.utils import create_test_user, get_auth_headers
 import json
 

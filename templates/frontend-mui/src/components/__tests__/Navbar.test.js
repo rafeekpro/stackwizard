@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Navbar from '../Navbar';
-import { AuthProvider, useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Mock the useAuth hook
 jest.mock('../../contexts/AuthContext', () => ({

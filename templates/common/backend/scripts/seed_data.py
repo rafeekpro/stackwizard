@@ -6,7 +6,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from app.models.user import User
 from app.models.item import Item
-from app.core.security import SecurityService
+from passlib.context import CryptContext
+
+# Password hashing setup
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 from app.core.config import settings
 from uuid import uuid4
 import json
@@ -165,7 +168,7 @@ async def seed_database():
             email="admin@example.com",
             username="admin",
             full_name="Admin User",
-            hashed_password=SecurityService.hash_password("admin123"),
+            hashed_password=pwd_context.hash("admin123"),
             is_active=True,
             is_superuser=True,
             is_verified=True
@@ -180,7 +183,7 @@ async def seed_database():
                 email=f"user{i}@example.com",
                 username=f"user{i}",
                 full_name=f"Test User {i}",
-                hashed_password=SecurityService.hash_password(f"password{i}"),
+                hashed_password=pwd_context.hash(f"password{i}"),
                 is_active=True,
                 is_superuser=False,
                 is_verified=True
