@@ -5,11 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    paths:
-      - 'templates/frontend-*/**'
-      - 'templates/common/backend/**'
-      - 'test/test-e2e-login.js'
-      - '.github/workflows/test-e2e-login.yml'
+    # Always run on PRs to main to ensure nothing is broken
+    # This is a required test for branch protection
 
 jobs:
   e2e-login-test:

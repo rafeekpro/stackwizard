@@ -5,10 +5,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    paths:
-      - 'templates/frontend-*/**'
-      - 'test/test-react-render-errors.js'
-      - '.github/workflows/test-react-errors.yml'
+    # Always run on PRs to main to ensure nothing is broken
+    # Previously had path filters but they prevented the test from running
+    # when other files were changed. Since this is a required test,
+    # it should run on all PRs to catch any regressions.
 
 jobs:
   react-error-handling:

@@ -5,10 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    paths:
-      - 'templates/frontend-*/**'
-      - 'test/test-react-router-issues.js'
-      - '.github/workflows/test-react-router.yml'
+    # Always run on PRs to main to ensure nothing is broken
+    # This is a required test for branch protection
 
 jobs:
   react-router-test:
