@@ -246,8 +246,6 @@ async def export_user_data(
         "total_items": len(items)
     }
     
-    # Return as downloadable JSON file
-    json_content = json.dumps(export_data, indent=2)
     
     return JSONResponse(
         content=export_data,
