@@ -276,11 +276,11 @@ class UserService:
         )
         items_count = items_count_result.scalar() or 0
         
-        # Get user's active items count
+        # Get user's available items count
         active_items_result = await db.execute(
             select(func.count(Item.id)).where(
                 Item.owner_id == user.id,
-                Item.is_active == True
+                Item.is_available == True
             )
         )
         active_items_count = active_items_result.scalar() or 0
@@ -290,14 +290,14 @@ class UserService:
             "active_items": active_items_count,
             "account_created": user.created_at,
             "email_verified": user.is_verified,
-            "last_login": user.last_login,
+            "last_login": user.last_login_at,
             "profile_completeness": UserService._calculate_profile_completeness(user)
         }
     
     @staticmethod
     def _calculate_profile_completeness(user: User) -> int:
         """Calculate user profile completeness percentage"""
-        total_fields = 5
+        total_fields = 4
         completed_fields = 0
         
         if user.email:
@@ -307,8 +307,6 @@ class UserService:
         if user.full_name:
             completed_fields += 1
         if user.is_verified:
-            completed_fields += 1
-        if user.phone_number:
             completed_fields += 1
         
         return int((completed_fields / total_fields) * 100)
@@ -326,12 +324,11 @@ class UserService:
                 "email": user.email,
                 "username": user.username,
                 "full_name": user.full_name,
-                "phone_number": user.phone_number,
                 "is_active": user.is_active,
                 "is_verified": user.is_verified,
                 "created_at": user.created_at.isoformat() if user.created_at else None,
                 "updated_at": user.updated_at.isoformat() if user.updated_at else None,
-                "last_login": user.last_login.isoformat() if user.last_login else None
+                "last_login": user.last_login_at.isoformat() if user.last_login_at else None
             }
         }
         

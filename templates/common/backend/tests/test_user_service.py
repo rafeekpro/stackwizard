@@ -314,7 +314,7 @@ class TestUserService:
         completeness = UserService._calculate_profile_completeness(sample_user)
         
         # Assert
-        assert completeness == 80  # 4 out of 5 fields completed
+        assert completeness == 100  # 4 out of 4 fields completed (email, username, full_name, is_verified)
     
     async def test_export_user_data(self, mock_db, sample_user):
         """Test user data export for GDPR compliance"""
