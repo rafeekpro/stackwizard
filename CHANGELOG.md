@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.14] - 2025-08-23
+
+### 🐛 Critical Bug Fix
+- **NPM Package Generation**: Fixed critical issue where npm package only generated frontend folder
+  - Root cause: `.npmignore` was excluding essential template files (.env.example, .github, *.md)
+  - Added exceptions to include template files needed for project generation
+  - Verified all components (backend, database, docker-compose) are now included
+
+### 🔧 Technical Details
+- Modified `.npmignore` to exclude `.env` files but include `templates/**/.env.example`
+- Modified `.npmignore` to exclude `.github` but include `templates/**/.github/`
+- Modified `.npmignore` to exclude `*.md` but include `templates/**/*.md`
+
+## [1.0.13] - 2025-08-23
+
+### ✨ New Features
+- **Conditional Navigation**: Added authentication-based conditional navigation in Material UI template
+  - Unauthenticated users see: Home, About | Sign In, Sign Up (on the right)
+  - Authenticated users see: Home, About, Users, Items, My Account | Logout (on the right)
+- **My Account Page**: Added comprehensive user account management page with three tabs:
+  - Profile tab: Update username and full name
+  - Password tab: Change password with validation
+  - Statistics tab: View account statistics and usage metrics
+- **Navigation Component**: Enhanced Navbar component with useAuth hook integration
+- **Protected Routes**: Added My Account route with authentication protection
+
+### 🧪 Testing
+- **TDD Approach**: Implemented Test-Driven Development for navigation components
+- **Navigation Tests**: Added comprehensive tests for conditional navigation display
+- **CI/CD**: All integration tests passing including e2e-login and react-error-handling
+
+### 🔧 Technical Improvements
+- **Workflow Triggers**: Fixed GitHub Actions workflow triggers for release branches
+- **Test Coverage**: Maintained 100% test coverage across all critical paths
+- **Code Quality**: Clean implementation following React best practices
+
 ## [1.0.12] - 2025-08-22
 
 ### 🚀 Release Summary

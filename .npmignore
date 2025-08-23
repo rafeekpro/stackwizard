@@ -10,11 +10,12 @@ coverage/
 
 # Environment and configuration
 .env
-.env.*
 .env.local
 .env.development
 .env.test
 .env.production
+# Don't ignore .env.example - it's needed as a template
+!templates/**/.env.example
 
 # Logs
 *.log
@@ -36,6 +37,8 @@ Thumbs.db
 # Git and CI/CD
 .git/
 .github/
+# Don't ignore .github in templates - it's needed for generated projects
+!templates/**/.github/
 .gitignore
 .gitlab-ci.yml
 .travis.yml
@@ -46,6 +49,8 @@ jenkinsfile
 docs/
 *.md
 !README.md
+# Don't ignore markdown files in templates - they're needed for generated projects
+!templates/**/*.md
 
 # Build and cache files
 dist/
