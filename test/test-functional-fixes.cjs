@@ -53,6 +53,12 @@ async function waitForSelector(page, selector, timeout = 30000) {
   }
 }
 
+// Load template code from files for better maintainability
+function loadTemplate(templateName) {
+  const templatePath = path.join(__dirname, 'templates', templateName);
+  return fs.readFileSync(templatePath, 'utf8');
+}
+
 async function testTemplate(templateType) {
   log(`\n📦 Testing ${templateType} template...`, 'blue');
   
@@ -63,20 +69,19 @@ async function testTemplate(templateType) {
     // 1. Generate project
     log('Generating project...', 'yellow');
     const answers = [
-      TEST_PROJECT_NAME,
-      '', // Enter for frontend port
-      '', // Enter for backend port
+      TEST_PROJECT_NAME,  // Project name
+      '', // Enter for UI library (Material UI is default)
       '', // Enter for db name
       '', // Enter for db user
       '', // Enter for db password
       '', // Enter for db port
+      '', // Enter for frontend port
+      '', // Enter for backend port
     ];
     
-    // Add UI library selection for correct template
-    if (templateType === 'mui') {
-      answers.unshift('Material UI');
-    } else {
-      answers.unshift('Tailwind CSS');
+    // For Tailwind, we need to arrow down once to select it
+    if (templateType === 'tailwind') {
+      answers[1] = '\x1B[B';  // Arrow down to select Tailwind CSS
     }
     
     execCommand(`echo "${answers.join('\\n')}" | node src/index.js`, {
@@ -87,44 +92,12 @@ async function testTemplate(templateType) {
     log('Updating backend initialization...', 'yellow');
     const initDbPath = path.join(projectDir, 'backend', 'app', 'db', 'init_db.py');
     const initDbContent = fs.readFileSync(initDbPath, 'utf8');
+    
+    // Load sample items function from template
+    const sampleItemsCode = loadTemplate('sample_items.py');
     const updatedInitDb = initDbContent.replace(
       'if __name__ == "__main__":',
-      `
-async def create_sample_items(db: AsyncSession, user: User) -> None:
-    """Create sample items for testing"""
-    from app.models.item import Item
-    
-    # Check if items exist
-    result = await db.execute(select(Item).limit(1))
-    existing_items = result.scalar_one_or_none()
-    
-    if not existing_items:
-        print("Creating sample items...")
-        sample_items = [
-            Item(
-                title="Sample Laptop",
-                description="High-performance laptop for development",
-                owner_id=user.id
-            ),
-            Item(
-                title="Wireless Mouse",
-                description="Ergonomic wireless mouse with long battery life",
-                owner_id=user.id
-            ),
-            Item(
-                title="Mechanical Keyboard",
-                description="RGB mechanical keyboard with cherry switches",
-                owner_id=user.id
-            ),
-        ]
-        
-        for item in sample_items:
-            db.add(item)
-        
-        await db.commit()
-        print(f"Created {len(sample_items)} sample items")
-
-if __name__ == "__main__":`
+      `\n${sampleItemsCode}\n\nif __name__ == "__main__":`
     );
     
     // Also call create_sample_items in init_db function
@@ -145,95 +118,22 @@ if __name__ == "__main__":`
     const usersApiPath = path.join(projectDir, 'backend', 'app', 'api', 'v1', 'users.py');
     const usersApiContent = fs.readFileSync(usersApiPath, 'utf8');
     
-    // Add statistics endpoint
-    const statsEndpoint = `
-@router.get("/me/statistics", response_model=dict)
-async def get_user_statistics(
-    current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_async_db)
-) -> Any:
-    """Get current user statistics"""
-    from datetime import datetime, timedelta
-    from sqlalchemy import func, select
-    from app.models.item import Item
-    
-    # Get user's items count
-    items_result = await db.execute(
-        select(func.count(Item.id)).where(Item.owner_id == current_user.id)
-    )
-    items_count = items_result.scalar() or 0
-    
-    # Calculate account age
-    account_age = datetime.utcnow() - current_user.created_at
-    
-    return {
-        "total_items": items_count,
-        "login_count": current_user.login_count or 0,
-        "last_login": current_user.last_login_at.isoformat() if current_user.last_login_at else None,
-        "account_age_days": account_age.days,
-        "email_verified": current_user.is_verified,
-        "account_created": current_user.created_at.isoformat(),
-        "last_updated": current_user.updated_at.isoformat() if current_user.updated_at else None
-    }
-`;
+    // Load statistics endpoint from template
+    const statsEndpoint = loadTemplate('statistics_endpoint.py');
     
     // Insert before the last export endpoint
     const updatedUsersApi = usersApiContent.replace(
       '@router.get("/me/export"',
-      statsEndpoint + '\n@router.get("/me/export"'
+      statsEndpoint + '\n\n@router.get("/me/export"'
     );
     
     fs.writeFileSync(usersApiPath, updatedUsersApi);
     
     // 4. Fix export endpoint
     log('Fixing export endpoint...', 'yellow');
-    const exportEndpoint = `
-@router.get("/me/export")
-async def export_user_data(
-    current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_async_db)
-) -> Any:
-    """Export all user data"""
-    from fastapi.responses import JSONResponse
-    from app.models.item import Item
-    import json
     
-    # Get user's items
-    items_result = await db.execute(
-        select(Item).where(Item.owner_id == current_user.id)
-    )
-    items = items_result.scalars().all()
-    
-    export_data = {
-        "user": {
-            "id": str(current_user.id),
-            "email": current_user.email,
-            "username": current_user.username,
-            "full_name": current_user.full_name,
-            "is_active": current_user.is_active,
-            "is_verified": current_user.is_verified,
-            "created_at": current_user.created_at.isoformat(),
-            "login_count": current_user.login_count
-        },
-        "items": [
-            {
-                "id": item.id,
-                "title": item.title,
-                "description": item.description,
-                "created_at": item.created_at.isoformat()
-            }
-            for item in items
-        ],
-        "export_date": datetime.utcnow().isoformat()
-    }
-    
-    return JSONResponse(
-        content=export_data,
-        headers={
-            "Content-Disposition": f"attachment; filename=user_data_{current_user.id}.json"
-        }
-    )
-`;
+    // Load export endpoint from template
+    const exportEndpoint = loadTemplate('export_endpoint.py');
     
     const finalUsersApi = updatedUsersApi.replace(
       /@router\.get\("\/me\/export"\)[\s\S]*?(?=@router|$)/,
@@ -275,67 +175,11 @@ async def export_user_data(
   useEffect(() => {`
       );
       
-      // Update statistics display
+      // Load and apply statistics display template
+      const statsDisplay = loadTemplate('mui_statistics_display.jsx');
       const finalMyAccount = updatedMyAccount.replace(
         '{stats ? (',
-        `{stats ? (
-            <Grid container spacing={3} sx={{ mt: 2 }}>
-              <Grid item xs={12} sm={6} md={4}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Total Items
-                  </Typography>
-                  <Typography variant="h4">{stats.total_items || 0}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Login Count
-                  </Typography>
-                  <Typography variant="h4">{stats.login_count || 0}</Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Last Login
-                  </Typography>
-                  <Typography variant="body1">
-                    {stats.last_login ? new Date(stats.last_login).toLocaleString() : 'N/A'}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Account Age
-                  </Typography>
-                  <Typography variant="h4">{stats.account_age_days || 0} days</Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Email Verified
-                  </Typography>
-                  <Typography variant="body1">
-                    {stats.email_verified ? '✅ Verified' : '❌ Not Verified'}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Account Created
-                  </Typography>
-                  <Typography variant="body1">
-                    {stats.account_created ? new Date(stats.account_created).toLocaleDateString() : 'N/A'}
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          ) : (`
+        statsDisplay
       );
       
       fs.writeFileSync(myAccountPath, finalMyAccount);
