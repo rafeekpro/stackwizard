@@ -479,7 +479,6 @@ async def change_password(
     
     # Hash and set new password
     current_user.hashed_password = AuthService.get_password_hash(password_data.new_password)
-    current_user.password_changed_at = datetime.now(timezone.utc)
     
     await db.commit()
     
@@ -494,7 +493,6 @@ async def deactivate_account(
     Deactivate current user's account
     """
     current_user.is_active = False
-    current_user.deactivated_at = datetime.now(timezone.utc)
     
     await db.commit()
     
