@@ -11,15 +11,15 @@ from app.core.dependencies import get_current_active_user, get_current_user
 from app.db.database import get_async_db
 from app.models.user import User
 from app.schemas.user import (
-    Token, UserLogin, UserRegister, User as UserSchema,
+    Token, TokenWithUser, UserLogin, UserRegister, User as UserSchema,
     PasswordResetRequest, PasswordReset, MessageResponse,
-    UserResponse
+    UserResponse, RegisterResponse
 )
 from app.services.auth import AuthService, SecurityService
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=TokenWithUser)
 async def login(
     db: AsyncSession = Depends(get_async_db),
     form_data: OAuth2PasswordRequestForm = Depends()
@@ -64,10 +64,22 @@ async def login(
         "access_token": access_token,
         "token_type": "bearer",
         "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        "refresh_token": refresh_token
+        "refresh_token": refresh_token,
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "username": user.username,
+            "full_name": user.full_name,
+            "is_superuser": user.is_superuser,
+            "is_active": user.is_active,
+            "is_verified": user.is_verified,
+            "login_count": user.login_count,
+            "created_at": user.created_at.isoformat() if user.created_at else None,
+            "updated_at": user.updated_at.isoformat() if user.updated_at else None
+        }
     }
 
-@router.post("/login-json", response_model=Token)
+@router.post("/login-json", response_model=TokenWithUser)
 async def login_json(
     user_credentials: UserLogin,
     db: AsyncSession = Depends(get_async_db)
@@ -115,10 +127,20 @@ async def login_json(
         "access_token": access_token,
         "token_type": "bearer",
         "expires_in": int(access_token_expires.total_seconds()),
-        "refresh_token": refresh_token
+        "refresh_token": refresh_token,
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "username": user.username,
+            "full_name": user.full_name,
+            "is_superuser": user.is_superuser,
+            "is_active": user.is_active,
+            "created_at": user.created_at.isoformat() if user.created_at else None,
+            "updated_at": user.updated_at.isoformat() if user.updated_at else None
+        }
     }
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register", response_model=RegisterResponse)
 async def register(
     user_data: UserRegister,
     db: AsyncSession = Depends(get_async_db)
@@ -177,10 +199,23 @@ async def register(
     # TODO: Send email verification email here
     # await send_email_verification(db_user.email, email_verification_token)
     
-    return UserResponse(
-        user=UserSchema.from_orm(db_user),
-        message="User registered successfully. Please check your email to verify your account."
-    )
+    # Do not create access or refresh tokens until email is verified
+    
+    return {
+        "user": {
+            "id": str(db_user.id),
+            "email": db_user.email,
+            "username": db_user.username,
+            "full_name": db_user.full_name,
+            "is_superuser": db_user.is_superuser,
+            "is_active": db_user.is_active,
+            "is_verified": db_user.is_verified,
+            "login_count": db_user.login_count,
+            "created_at": db_user.created_at.isoformat() if db_user.created_at else None,
+            "updated_at": db_user.updated_at.isoformat() if db_user.updated_at else None
+        },
+        "message": "User registered successfully. Please check your email to verify your account."
+    }
 
 @router.post("/refresh", response_model=Token)
 async def refresh_token(
