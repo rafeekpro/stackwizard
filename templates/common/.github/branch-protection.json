@@ -1,0 +1,24 @@
+{
+  "protection_rules": [
+    {
+      "branch": "main",
+      "required_status_checks": {
+        "strict": true,
+        "contexts": [
+          "e2e-navigation-test",
+          "backend-integration-test"
+        ]
+      },
+      "enforce_admins": true,
+      "required_pull_request_reviews": null,
+      "restrictions": null,
+      "allow_force_pushes": false,
+      "allow_deletions": false,
+      "block_creations": false,
+      "required_conversation_resolution": true,
+      "lock_branch": false,
+      "allow_fork_syncing": false
+    }
+  ],
+  "description": "Branch protection configuration requiring all tests to pass before merge"
+}

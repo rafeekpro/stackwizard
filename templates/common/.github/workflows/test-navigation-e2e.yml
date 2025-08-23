@@ -1,0 +1,158 @@
+name: E2E Navigation Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e-navigation-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio httpx
+    
+    - name: Setup database
+      working-directory: ./backend
+      env:
+        DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/testdb
+      run: |
+        alembic upgrade head
+        python -c "
+        import asyncio
+        from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+        from sqlalchemy.orm import sessionmaker
+        from app.models.user import User
+        from app.core.security import get_password_hash
+        import uuid
+
+        async def create_admin():
+            engine = create_async_engine('postgresql+asyncpg://testuser:testpassword@localhost:5432/testdb')
+            async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+            
+            async with async_session() as session:
+                admin = User(
+                    id=uuid.uuid4(),
+                    email='admin@example.com',
+                    hashed_password=get_password_hash('admin123'),
+                    full_name='Admin User',
+                    is_active=True,
+                    is_superuser=True,
+                    is_verified=True
+                )
+                session.add(admin)
+                await session.commit()
+            
+            await engine.dispose()
+
+        asyncio.run(create_admin())
+        "
+    
+    - name: Start backend server
+      working-directory: ./backend
+      env:
+        DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/testdb
+        SECRET_KEY: test-secret-key
+      run: |
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        sleep 5
+        curl -f http://localhost:8000/health || exit 1
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: |
+        npm ci
+        npm install --save-dev puppeteer
+    
+    - name: Build and start frontend
+      working-directory: ./frontend
+      env:
+        REACT_APP_API_URL: http://localhost:8000
+        CI: false
+      run: |
+        npm run build
+        npm start &
+        sleep 10
+        curl -f http://localhost:3000 || exit 1
+    
+    - name: Run E2E navigation tests
+      run: |
+        cat > test-e2e.js << 'EOF'
+        const puppeteer = require('puppeteer');
+
+        (async () => {
+          const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+          });
+          
+          try {
+            const page = await browser.newPage();
+            await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
+            
+            // Test unauthenticated navigation
+            const hasSignIn = await page.$eval('body', el => el.textContent.includes('Sign In'));
+            if (!hasSignIn) throw new Error('Sign In not found');
+            
+            // Login
+            const signInBtn = await page.evaluateHandle(() => 
+              Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Sign In'))
+            );
+            await signInBtn.click();
+            await page.waitForNavigation();
+            
+            await page.type('input[type="email"]', 'admin@example.com');
+            await page.type('input[type="password"]', 'admin123');
+            await page.click('button[type="submit"]');
+            await page.waitForNavigation();
+            
+            // Check authenticated navigation
+            await page.waitForTimeout(2000);
+            const hasLogout = await page.$eval('body', el => el.textContent.includes('Logout'));
+            if (!hasLogout) throw new Error('Logout not found after login');
+            
+            console.log('✅ E2E Navigation test passed!');
+            process.exit(0);
+          } catch (error) {
+            console.error('❌ Test failed:', error.message);
+            process.exit(1);
+          } finally {
+            await browser.close();
+          }
+        })();
+        EOF
+        
+        cd frontend && node ../test-e2e.js
