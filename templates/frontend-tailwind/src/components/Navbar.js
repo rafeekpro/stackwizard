@@ -20,10 +20,8 @@ export default function Navbar() {
   ];
 
   const authenticatedNavigation = [
-    { name: 'Home', href: '/', current: false },
     { name: 'Users', href: '/users', current: false },
     { name: 'Items', href: '/items', current: false },
-    { name: 'About', href: '/about', current: false },
     { name: 'My Account', href: '/my-account', current: false },
   ];
 
