@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.15] - 2025-08-23
+
 ### 🐛 Docker Compose Fixes
 - **Fixed duplicate alembic migrations** - Removed alembic command from Dockerfile CMD
 - **Fixed netcat compatibility** - Changed from `nc.traditional` to `nc` in docker-compose
@@ -43,6 +45,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Support for `test:all` label to run full suite
 
 ### 📚 Documentation
+- **Development Rules** (`CLAUDE.md`)
+  - Comprehensive development guidelines
+  - TDD requirements and testing standards
+  - CHANGELOG management rules
+  - PR checklist and golden rules
 - **Branch Protection Guide** (`.github/branch-protection.md`)
   - Clear documentation of required vs optional tests
   - Configuration instructions for GitHub
