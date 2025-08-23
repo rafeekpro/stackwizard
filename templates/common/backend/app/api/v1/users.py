@@ -478,7 +478,7 @@ async def change_password(
         )
     
     # Hash and set new password
-    current_user.hashed_password = AuthService.hash_password(password_data.new_password)
+    current_user.hashed_password = AuthService.get_password_hash(password_data.new_password)
     current_user.password_changed_at = datetime.now(timezone.utc)
     
     await db.commit()
