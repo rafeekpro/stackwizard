@@ -182,6 +182,7 @@ async def get_user_statistics(
 ) -> Any:
     """Get current user statistics"""
     from app.models.item import Item
+    from datetime import timezone
     
     # Get user's items count
     items_result = await db.execute(
@@ -189,8 +190,9 @@ async def get_user_statistics(
     )
     items_count = items_result.scalar() or 0
     
-    # Calculate account age
-    account_age = datetime.utcnow() - current_user.created_at
+    # Calculate account age - use timezone-aware datetime
+    now = datetime.now(timezone.utc)
+    account_age = now - current_user.created_at
     
     return {
         "total_items": items_count,
@@ -211,6 +213,7 @@ async def export_user_data(
 ) -> Any:
     """Export all user data as JSON"""
     from app.models.item import Item
+    from datetime import timezone
     
     # Get user's items
     items_result = await db.execute(
@@ -242,15 +245,15 @@ async def export_user_data(
             }
             for item in items
         ],
-        "export_date": datetime.utcnow().isoformat(),
+        "export_date": datetime.now(timezone.utc).isoformat(),
         "total_items": len(items)
     }
     
-    
+    now = datetime.now(timezone.utc)
     return JSONResponse(
         content=export_data,
         headers={
-            "Content-Disposition": f"attachment; filename=user_data_{current_user.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+            "Content-Disposition": f"attachment; filename=user_data_{current_user.id}_{now.strftime('%Y%m%d_%H%M%S')}.json"
         }
     )
 
