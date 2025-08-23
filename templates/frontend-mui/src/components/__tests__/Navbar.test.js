@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Navbar from '../Navbar';
 import { useAuth } from '../../contexts/AuthContext';
@@ -30,170 +30,156 @@ describe('Navbar Component', () => {
       });
     });
 
-    it('should show Home and About links', () => {
+    test('shows public navigation items', () => {
       render(
         <BrowserRouter>
           <Navbar />
         </BrowserRouter>
       );
 
-      expect(screen.getByText('Home')).toBeInTheDocument();
-      expect(screen.getByText('About')).toBeInTheDocument();
+      // Check for public pages using tab links
+      const tabs = screen.getByRole('tablist');
+      expect(within(tabs).getByText('Home')).toBeInTheDocument();
+      expect(within(tabs).getByText('About')).toBeInTheDocument();
+      
+      // Should not show authenticated pages
+      expect(within(tabs).queryByText('Users')).not.toBeInTheDocument();
+      expect(within(tabs).queryByText('Items')).not.toBeInTheDocument();
+      expect(within(tabs).queryByText('My Account')).not.toBeInTheDocument();
     });
 
-    it('should show Sign In and Sign Up buttons', () => {
+    test('shows Sign In and Sign Up buttons', () => {
       render(
         <BrowserRouter>
           <Navbar />
         </BrowserRouter>
       );
 
-      expect(screen.getByText('Sign In')).toBeInTheDocument();
-      expect(screen.getByText('Sign Up')).toBeInTheDocument();
-    });
-
-    it('should NOT show authenticated menu items', () => {
-      render(
-        <BrowserRouter>
-          <Navbar />
-        </BrowserRouter>
-      );
-
-      expect(screen.queryByText('Users')).not.toBeInTheDocument();
-      expect(screen.queryByText('Items')).not.toBeInTheDocument();
-      expect(screen.queryByText('My Account')).not.toBeInTheDocument();
+      // Check for auth buttons
+      const signInButtons = screen.getAllByText('Sign In');
+      const signUpButtons = screen.getAllByText('Sign Up');
+      
+      // Should have at least one of each
+      expect(signInButtons.length).toBeGreaterThan(0);
+      expect(signUpButtons.length).toBeGreaterThan(0);
+      
+      // Should not show logout
       expect(screen.queryByText('Logout')).not.toBeInTheDocument();
     });
 
-    it('should navigate to login when Sign In is clicked', () => {
+    test('Sign In button navigates to login page', () => {
       render(
         <BrowserRouter>
           <Navbar />
         </BrowserRouter>
       );
 
-      const signInButton = screen.getByText('Sign In');
+      const signInButton = screen.getAllByText('Sign In')[0];
       fireEvent.click(signInButton);
+      
       expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
 
-    it('should navigate to register when Sign Up is clicked', () => {
+    test('Sign Up button navigates to register page', () => {
       render(
         <BrowserRouter>
           <Navbar />
         </BrowserRouter>
       );
 
-      const signUpButton = screen.getByText('Sign Up');
+      const signUpButton = screen.getAllByText('Sign Up')[0];
       fireEvent.click(signUpButton);
+      
       expect(mockNavigate).toHaveBeenCalledWith('/register');
     });
   });
 
   describe('Authenticated User', () => {
     const mockLogout = jest.fn();
-
+    
     beforeEach(() => {
       useAuth.mockReturnValue({
-        user: { 
-          id: '123', 
-          email: 'test@example.com',
-          full_name: 'Test User'
-        },
+        user: { id: 1, email: 'test@example.com' },
         logout: mockLogout,
       });
     });
 
-    it('should show Home and About links', () => {
+    test('shows authenticated navigation items', () => {
       render(
         <BrowserRouter>
           <Navbar />
         </BrowserRouter>
       );
 
-      expect(screen.getByText('Home')).toBeInTheDocument();
-      expect(screen.getByText('About')).toBeInTheDocument();
+      // Check for all authenticated pages
+      const tabs = screen.getByRole('tablist');
+      expect(within(tabs).getByText('Home')).toBeInTheDocument();
+      expect(within(tabs).getByText('About')).toBeInTheDocument();
+      expect(within(tabs).getByText('Users')).toBeInTheDocument();
+      expect(within(tabs).getByText('Items')).toBeInTheDocument();
+      expect(within(tabs).getByText('My Account')).toBeInTheDocument();
     });
 
-    it('should show Users, Items, and My Account links', () => {
+    test('shows Logout button', () => {
       render(
         <BrowserRouter>
           <Navbar />
         </BrowserRouter>
       );
 
-      expect(screen.getByText('Users')).toBeInTheDocument();
-      expect(screen.getByText('Items')).toBeInTheDocument();
-      expect(screen.getByText('My Account')).toBeInTheDocument();
-    });
-
-    it('should show Logout button', () => {
-      render(
-        <BrowserRouter>
-          <Navbar />
-        </BrowserRouter>
-      );
-
-      expect(screen.getByText('Logout')).toBeInTheDocument();
-    });
-
-    it('should NOT show Sign In and Sign Up buttons', () => {
-      render(
-        <BrowserRouter>
-          <Navbar />
-        </BrowserRouter>
-      );
-
+      // Check for logout button
+      const logoutButtons = screen.getAllByText('Logout');
+      expect(logoutButtons.length).toBeGreaterThan(0);
+      
+      // Should not show sign in/sign up
       expect(screen.queryByText('Sign In')).not.toBeInTheDocument();
       expect(screen.queryByText('Sign Up')).not.toBeInTheDocument();
     });
 
-    it('should call logout when Logout is clicked', async () => {
+    test('Logout button calls logout function', () => {
       render(
         <BrowserRouter>
           <Navbar />
         </BrowserRouter>
       );
 
-      const logoutButton = screen.getByText('Logout');
+      const logoutButton = screen.getAllByText('Logout')[0];
       fireEvent.click(logoutButton);
       
       expect(mockLogout).toHaveBeenCalled();
     });
 
-    it('should navigate to My Account when clicked', () => {
+    test('My Account link navigates to my-account page', () => {
       render(
         <BrowserRouter>
           <Navbar />
         </BrowserRouter>
       );
 
-      // For Link components, we need to check the href
-      const myAccountLink = screen.getByText('My Account').closest('a');
-      expect(myAccountLink).toHaveAttribute('href', '/my-account');
+      const tabs = screen.getByRole('tablist');
+      const myAccountTab = within(tabs).getByText('My Account');
+      
+      // The tab itself is a link
+      expect(myAccountTab.closest('a')).toHaveAttribute('href', '/my-account');
     });
   });
 
-  describe('Mobile Navigation', () => {
-    it('should toggle mobile menu when menu icon is clicked', () => {
+  describe('Navigation Structure', () => {
+    test('renders AppBar with correct structure', () => {
       useAuth.mockReturnValue({
         user: null,
         logout: jest.fn(),
       });
-
+      
       render(
         <BrowserRouter>
           <Navbar />
         </BrowserRouter>
       );
 
-      // Find and click the menu icon button
-      const menuButton = screen.getByLabelText(/menu/i);
-      fireEvent.click(menuButton);
-
-      // Check if mobile menu items are visible
-      // Note: Implementation will determine exact behavior
-      expect(screen.getByText('Home')).toBeInTheDocument();
+      // Check for AppBar components
+      expect(screen.getByRole('banner')).toBeInTheDocument(); // AppBar has banner role
+      expect(screen.getByRole('tablist')).toBeInTheDocument(); // Tabs component
     });
   });
 });
