@@ -1,14 +1,8 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Disclosure } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-
-const navigation = [
-  { name: 'Home', href: '/', current: false },
-  { name: 'Users', href: '/users', current: false },
-  { name: 'Items', href: '/items', current: false },
-  { name: 'About', href: '/about', current: false },
-];
+import { useAuth } from '../contexts/AuthContext';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -16,11 +10,42 @@ function classNames(...classes) {
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  // Define navigation items based on authentication status
+  const publicNavigation = [
+    { name: 'Home', href: '/', current: false },
+    { name: 'About', href: '/about', current: false },
+  ];
+
+  const authenticatedNavigation = [
+    { name: 'Home', href: '/', current: false },
+    { name: 'Users', href: '/users', current: false },
+    { name: 'Items', href: '/items', current: false },
+    { name: 'About', href: '/about', current: false },
+    { name: 'My Account', href: '/my-account', current: false },
+  ];
+
+  const navigation = user ? authenticatedNavigation : publicNavigation;
 
   const updatedNavigation = navigation.map((item) => ({
     ...item,
     current: location.pathname === item.href,
   }));
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const handleSignIn = () => {
+    navigate('/login');
+  };
+
+  const handleSignUp = () => {
+    navigate('/register');
+  };
 
   return (
     <Disclosure as="nav" className="bg-white shadow">
@@ -63,6 +88,38 @@ export default function Navbar() {
                   </div>
                 </div>
               </div>
+
+              {/* Desktop Auth Buttons */}
+              <div className="hidden sm:flex sm:items-center sm:space-x-2">
+                {!user ? (
+                  <>
+                    <button
+                      onClick={handleSignIn}
+                      className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      onClick={handleSignUp}
+                      className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors duration-200"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm text-gray-700 mr-2">
+                      {user.email}
+                    </span>
+                    <button
+                      onClick={handleLogout}
+                      className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    >
+                      Logout
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -84,6 +141,41 @@ export default function Navbar() {
                   {item.name}
                 </Disclosure.Button>
               ))}
+              
+              {/* Mobile Auth Buttons */}
+              <div className="border-t border-gray-200 pt-3 mt-3">
+                {!user ? (
+                  <>
+                    <Disclosure.Button
+                      as="button"
+                      onClick={handleSignIn}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    >
+                      Sign In
+                    </Disclosure.Button>
+                    <Disclosure.Button
+                      as="button"
+                      onClick={handleSignUp}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200 mt-1"
+                    >
+                      Sign Up
+                    </Disclosure.Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="px-3 py-2 text-sm text-gray-700">
+                      {user.email}
+                    </div>
+                    <Disclosure.Button
+                      as="button"
+                      onClick={handleLogout}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    >
+                      Logout
+                    </Disclosure.Button>
+                  </>
+                )}
+              </div>
             </div>
           </Disclosure.Panel>
         </>
