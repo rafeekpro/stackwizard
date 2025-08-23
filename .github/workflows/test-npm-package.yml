@@ -1,0 +1,47 @@
+name: Test NPM Package Files
+
+on:
+  push:
+    branches: [main, develop, release/*]
+  pull_request:
+    branches: [main]
+    paths:
+      - '.npmignore'
+      - 'package.json'
+      - 'templates/**'
+      - 'src/**'
+      - 'test/test-npm-package-files.js'
+      - '.github/workflows/test-npm-package.yml'
+
+jobs:
+  test-npm-package:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Test NPM package file inclusion
+        run: npm run test:package
+        
+      - name: Verify package can be created
+        run: |
+          npm pack --dry-run
+          echo "✅ Package can be created successfully"
+          
+      - name: Check package size
+        run: |
+          SIZE=$(npm pack --dry-run --json | jq '.[0].size')
+          echo "Package size: $SIZE bytes"
+          if [ $SIZE -lt 100000 ]; then
+            echo "❌ Package is suspiciously small (less than 100KB)"
+            exit 1
+          fi
+          echo "✅ Package size is reasonable"

@@ -17,10 +17,13 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test src/**/*.test.js || echo 'No tests found'",
+    "test:package": "node test/test-npm-package-files.js",
+    "test:structure": "node test/test-generated-structure.js",
+    "test:all": "npm run test:package && npm run test:structure",
     "lint": "eslint src/ --ext .js",
     "format": "prettier --write 'src/**/*.js'",
     "format:check": "prettier --check 'src/**/*.js'",
-    "prepublishOnly": "npm run lint && npm run format:check"
+    "prepublishOnly": "npm run lint && npm run format:check && npm run test:package"
   },
   "keywords": [
     "generator",
