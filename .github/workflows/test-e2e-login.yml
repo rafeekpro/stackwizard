@@ -3,13 +3,16 @@ name: E2E Login Test
 on:
   push:
     branches: [main]
+    paths:
+      - 'templates/**'
+      - 'test/test-e2e-login.js'
   pull_request:
     branches: [main]
     paths:
-      - 'templates/frontend-*/**'
-      - 'templates/common/backend/**'
+      - 'templates/**'
       - 'test/test-e2e-login.js'
       - '.github/workflows/test-e2e-login.yml'
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   e2e-login-test:

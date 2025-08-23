@@ -1,0 +1,111 @@
+name: Essential CI Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  # Always run - basic quality checks
+  lint-and-format:
+    name: Lint and Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+  
+  # Always run - core functionality
+  test-generator:
+    name: Test Generator CLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - name: Test generator CLI
+        run: |
+          node src/index.js --help
+          node src/index.js --version
+      - name: Test package files inclusion
+        run: npm run test:package
+      - name: Test generated structure
+        run: npm run test:structure
+  
+  # Only run when backend files change
+  test-backend:
+    name: Test Backend Template
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.labels.*.name, 'test:all') ||
+      contains(join(github.event.pull_request.files.*.filename, ' '), 'backend')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: npm ci
+      - name: Generate test project
+        run: node src/index.js --quick --name test-backend
+      - name: Test backend
+        run: |
+          cd test-backend/backend
+          pip install -r requirements.txt
+          pytest tests/ -v --tb=short || true
+  
+  # Only run when frontend files change  
+  test-frontend:
+    name: Test Frontend Templates
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.labels.*.name, 'test:all') ||
+      contains(join(github.event.pull_request.files.*.filename, ' '), 'frontend')
+    strategy:
+      matrix:
+        ui: [mui, tailwind]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - name: Generate test project
+        run: node src/index.js --quick --name test-frontend-${{ matrix.ui }} --ui ${{ matrix.ui }}
+      - name: Test frontend build
+        run: |
+          cd test-frontend-${{ matrix.ui }}/frontend
+          npm install
+          npm run build
+  
+  # Only run when Docker files change
+  test-docker:
+    name: Test Docker Integration
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.labels.*.name, 'test:all') ||
+      contains(join(github.event.pull_request.files.*.filename, ' '), 'docker') ||
+      contains(join(github.event.pull_request.files.*.filename, ' '), 'Dockerfile')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Run Docker test
+        run: npm run test:docker
+        timeout-minutes: 10

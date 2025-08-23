@@ -3,12 +3,16 @@ name: React Error Handling Test
 on:
   push:
     branches: [main]
+    paths:
+      - 'templates/frontend-*/**'
+      - 'test/test-react-render-errors.js'
   pull_request:
     branches: [main]
     paths:
       - 'templates/frontend-*/**'
       - 'test/test-react-render-errors.js'
       - '.github/workflows/test-react-errors.yml'
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   react-error-handling:

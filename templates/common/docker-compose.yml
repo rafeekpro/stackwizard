@@ -73,10 +73,10 @@ services:
     command: >
       sh -c "
         echo 'Waiting for database...' &&
-        while ! nc.traditional -z db 5432; do sleep 1; done &&
+        while ! nc -z db 5432; do sleep 1; done &&
         echo 'Database is ready!' &&
         alembic upgrade head &&
-        uvicorn app.main:app --host 0.0.0.0 --port ${API_PORT:-8000} --reload
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --workers 1
       "
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
