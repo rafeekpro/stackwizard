@@ -737,7 +737,7 @@ export async function checkSystemRequirements(logger) {
   for (const [key, req] of Object.entries(requirements)) {
     try {
       let stdout, version, usedCommand;
-      
+
       // Handle multiple command options (for Python and pip)
       if (req.commands) {
         let found = false;
@@ -785,7 +785,9 @@ export async function checkSystemRequirements(logger) {
         results[key].meetsRequirement = meetsRequirement;
       }
 
-      logger.debug(`${req.name} is installed (version: ${version}, command: ${usedCommand})`);
+      logger.debug(
+        `${req.name} is installed (version: ${version}, command: ${usedCommand})`
+      );
     } catch (error) {
       if (error instanceof StackWizardError) {
         throw error;
