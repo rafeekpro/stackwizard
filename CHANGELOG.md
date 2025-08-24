@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Port availability checking before project creation
   - Backup creation before cleanup for large projects
 
+### 🐛 Bug Fixes
+- **Docker npm dependency installation** - Fixed missing dependencies in containers
+  - Use `npm ci` for more reliable installs when package-lock.json exists
+  - Ensures all locked dependencies are properly installed
+  - Fixes missing @headlessui/react and @heroicons/react in Tailwind template
+  - Applied to both MUI and Tailwind templates
+
 ### 🔧 Improvements
 - **Enhanced Validators** - Improved input validation
   - Project name validation with reserved names check
