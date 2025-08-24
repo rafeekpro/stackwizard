@@ -7,13 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2025-08-24
+
 ### ✨ New Features
 - **Comprehensive Error Handling System** - Enhanced error handling for better user experience
   - Added 20+ specific error codes for different failure scenarios
   - Implemented error recovery mechanisms with automatic retry
   - Created user-friendly error messages with clear solutions
   - Added error context tracking for debugging
-  - System requirements checking with version validation
+  - System requirements checking with version validation (`--check-requirements` flag)
   - Port availability checking before project creation
   - Backup creation before cleanup for large projects
 
@@ -23,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Port validation with commonly used ports warning
   - Database configuration validation
   - Password strength requirements
-- **Logging System** - Advanced debug logging
+- **Logging System** - Advanced debug logging (`--debug` flag)
   - Automatic log file cleanup (keeps last 10 logs)
   - Structured logging with different levels
   - Error context capture with system information
@@ -33,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Recovery attempt tracking with maximum limits
   - Graceful degradation for non-critical failures
   - Cleanup with backup for partially created projects
+- **Version Detection** - Improved Python/pip version detection
+  - Removed shell operators (`||`) for consistent detection
+  - Proper fallback logic (tries python3/pip3 first, then python/pip)
+  - Shows which specific command was used in output
 
 ### 🧪 Testing
 - **Error Handling Tests** - Comprehensive test suite
@@ -41,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - System requirements checking tests
   - Port availability detection tests
   - Cleanup and backup functionality tests
+  - Added Jest as dev dependency for testing
 
 ## [1.1.0] - 2025-08-23
 
