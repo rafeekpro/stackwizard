@@ -16,7 +16,7 @@ import {
   ErrorHandler,
   Validators,
   checkSystemRequirements,
-  cleanup
+  cleanup,
 } from './errors.js';
 
 const execAsync = promisify(exec);
@@ -57,7 +57,7 @@ program
     // Initialize logger and error handler
     const logger = new Logger(options.debug);
     const errorHandler = new ErrorHandler(logger);
-    
+
     logger.debug('StackWizard started', { options, version: VERSION });
 
     // Check system requirements if requested
@@ -65,27 +65,31 @@ program
       console.log(chalk.cyan('\n🔍 Checking system requirements...\n'));
       try {
         const requirements = await checkSystemRequirements(logger);
-        
+
         console.log(chalk.green.bold('System Requirements Check:\n'));
-        for (const [key, info] of Object.entries(requirements)) {
-          const status = info.installed 
+        for (const info of Object.values(requirements)) {
+          const status = info.installed
             ? chalk.green('✓ Installed')
-            : info.optional 
+            : info.optional
               ? chalk.yellow('✗ Not installed (optional)')
               : chalk.red('✗ Not installed (required)');
           console.log(`  ${info.name}: ${status}`);
         }
-        
+
         const hasRequired = Object.values(requirements)
-          .filter(r => !r.optional)
-          .every(r => r.installed);
-        
+          .filter((r) => !r.optional)
+          .every((r) => r.installed);
+
         if (hasRequired) {
-          console.log(chalk.green('\n✅ All required dependencies are installed!'));
+          console.log(
+            chalk.green('\n✅ All required dependencies are installed!')
+          );
         } else {
-          console.log(chalk.red('\n❌ Some required dependencies are missing.'));
+          console.log(
+            chalk.red('\n❌ Some required dependencies are missing.')
+          );
         }
-        
+
         process.exit(0);
       } catch (error) {
         await errorHandler.handle(error);
@@ -236,16 +240,16 @@ program
         `Directory ${answers.projectName} already exists`,
         { projectName: answers.projectName, path: projectPath }
       );
-      
-      const recovered = await errorHandler.handle(error, { 
+
+      const recovered = await errorHandler.handle(error, {
         projectName: answers.projectName,
-        details: `Path: ${projectPath}`
+        details: `Path: ${projectPath}`,
       });
-      
+
       if (!recovered) {
         process.exit(1);
       }
-      
+
       // If recovery suggested, exit gracefully
       process.exit(0);
     }
@@ -261,7 +265,7 @@ program
       spinner.text = 'Copying backend template...';
       const backendSrc = path.join(TEMPLATES_DIR, 'common', 'backend');
       const backendDest = path.join(projectPath, 'backend');
-      
+
       if (!fs.existsSync(backendSrc)) {
         throw new StackWizardError(
           ErrorCodes.TEMPLATE_NOT_FOUND,
@@ -269,8 +273,11 @@ program
           { path: backendSrc }
         );
       }
-      
-      logger.debug('Copying backend template', { from: backendSrc, to: backendDest });
+
+      logger.debug('Copying backend template', {
+        from: backendSrc,
+        to: backendDest,
+      });
       await fs.copy(backendSrc, backendDest);
 
       spinner.text = 'Setting up database configuration...';
@@ -283,7 +290,7 @@ program
         answers.uiLibrary === 'mui' ? 'frontend-mui' : 'frontend-tailwind';
       const frontendSrc = path.join(TEMPLATES_DIR, frontendTemplate);
       const frontendDest = path.join(projectPath, 'frontend');
-      
+
       if (!fs.existsSync(frontendSrc)) {
         throw new StackWizardError(
           ErrorCodes.TEMPLATE_NOT_FOUND,
@@ -291,8 +298,12 @@ program
           { path: frontendSrc, template: frontendTemplate }
         );
       }
-      
-      logger.debug('Copying frontend template', { template: frontendTemplate, from: frontendSrc, to: frontendDest });
+
+      logger.debug('Copying frontend template', {
+        template: frontendTemplate,
+        from: frontendSrc,
+        to: frontendDest,
+      });
       await fs.copy(frontendSrc, frontendDest);
 
       spinner.text = 'Creating Docker Compose configuration...';
@@ -448,16 +459,14 @@ coverage/
             'Git initialization failed',
             { error: gitError.message }
           );
-          
-          await errorHandler.handle(error, { 
+
+          await errorHandler.handle(error, {
             projectName: answers.projectName,
-            skipFeatures: []
+            skipFeatures: [],
           });
-          
+
           spinner.warn(
-            chalk.yellow(
-              'Git initialization skipped (continuing without Git)'
-            )
+            chalk.yellow('Git initialization skipped (continuing without Git)')
           );
         }
       }
@@ -467,10 +476,13 @@ coverage/
         spinner.text = 'Installing backend dependencies...';
         try {
           logger.debug('Installing backend dependencies');
-          await execAsync('pip3 install -r requirements.txt || pip install -r requirements.txt', {
-            cwd: path.join(projectPath, 'backend'),
-            timeout: 120000 // 2 minute timeout
-          });
+          await execAsync(
+            'pip3 install -r requirements.txt || pip install -r requirements.txt',
+            {
+              cwd: path.join(projectPath, 'backend'),
+              timeout: 120000, // 2 minute timeout
+            }
+          );
           logger.info('Backend dependencies installed successfully');
         } catch (pipError) {
           const error = new StackWizardError(
@@ -478,12 +490,12 @@ coverage/
             'Backend dependencies installation failed',
             { error: pipError.message }
           );
-          
-          await errorHandler.handle(error, { 
+
+          await errorHandler.handle(error, {
             projectName: answers.projectName,
-            skipFeatures: []
+            skipFeatures: [],
           });
-          
+
           spinner.warn(
             chalk.yellow(
               'Backend dependencies installation skipped (install manually later)'
@@ -496,7 +508,7 @@ coverage/
           logger.debug('Installing frontend dependencies');
           await execAsync('npm install', {
             cwd: path.join(projectPath, 'frontend'),
-            timeout: 180000 // 3 minute timeout
+            timeout: 180000, // 3 minute timeout
           });
           logger.info('Frontend dependencies installed successfully');
         } catch (npmError) {
@@ -505,14 +517,16 @@ coverage/
             'Frontend dependencies installation failed',
             { error: npmError.message }
           );
-          
-          await errorHandler.handle(error, { 
+
+          await errorHandler.handle(error, {
             projectName: answers.projectName,
-            skipFeatures: []
+            skipFeatures: [],
           });
-          
+
           spinner.warn(
-            chalk.yellow('Frontend dependencies installation skipped (install manually later)')
+            chalk.yellow(
+              'Frontend dependencies installation skipped (install manually later)'
+            )
           );
         }
       }
@@ -569,37 +583,37 @@ coverage/
       );
 
       console.log(chalk.green.bold('Happy coding! 🎉'));
-      
+
       // Log success
       logger.info('Project created successfully', {
         projectName: answers.projectName,
         uiLibrary: answers.uiLibrary,
-        features: answers.features
+        features: answers.features,
       });
-      
+
       if (logger.debugMode) {
         console.log(chalk.gray(`\nDebug log saved to: ${logger.getLogPath()}`));
       }
     } catch (error) {
       spinner.fail(chalk.red('Failed to create project'));
-      
+
       // Handle the error with our error handler
       const handled = await errorHandler.handle(error, {
         projectName: answers.projectName,
         projectPath,
-        stage: 'project_creation'
+        stage: 'project_creation',
       });
-      
+
       // Clean up if project was partially created
       if (projectCreated && !handled) {
         await cleanup(projectPath, logger);
       }
-      
+
       // Generate error report if in debug mode
       if (logger.debugMode) {
         errorHandler.generateErrorReport();
       }
-      
+
       process.exit(1);
     }
   });
