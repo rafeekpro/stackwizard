@@ -720,13 +720,13 @@ export async function checkSystemRequirements(logger) {
     git: { command: 'git --version', name: 'Git', optional: true },
     docker: { command: 'docker --version', name: 'Docker', optional: true },
     python: {
-      command: 'python3 --version || python --version',
+      commands: ['python3 --version', 'python --version'],
       name: 'Python',
       optional: true,
       minVersion: '3.8.0',
     },
     pip: {
-      command: 'pip3 --version || pip --version',
+      commands: ['pip3 --version', 'pip --version'],
       name: 'pip',
       optional: true,
     },
@@ -736,14 +736,41 @@ export async function checkSystemRequirements(logger) {
 
   for (const [key, req] of Object.entries(requirements)) {
     try {
-      const { stdout } = await execAsync(req.command);
-      const version = extractVersion(stdout);
+      let stdout, version, usedCommand;
+      
+      // Handle multiple command options (for Python and pip)
+      if (req.commands) {
+        let found = false;
+        for (const cmd of req.commands) {
+          try {
+            const result = await execAsync(cmd);
+            stdout = result.stdout;
+            version = extractVersion(stdout);
+            usedCommand = cmd.split(' ')[0]; // Extract just the command name
+            found = true;
+            break;
+          } catch {
+            // Try next command
+            continue;
+          }
+        }
+        if (!found) {
+          throw new Error(`${req.name} not found`);
+        }
+      } else {
+        // Handle single command
+        const result = await execAsync(req.command);
+        stdout = result.stdout;
+        version = extractVersion(stdout);
+        usedCommand = req.command.split(' ')[0];
+      }
 
       results[key] = {
         installed: true,
         name: req.name,
         version,
         optional: req.optional,
+        command: usedCommand,
       };
 
       // Check minimum version if specified
@@ -758,7 +785,7 @@ export async function checkSystemRequirements(logger) {
         results[key].meetsRequirement = meetsRequirement;
       }
 
-      logger.debug(`${req.name} is installed (version: ${version})`);
+      logger.debug(`${req.name} is installed (version: ${version}, command: ${usedCommand})`);
     } catch (error) {
       if (error instanceof StackWizardError) {
         throw error;

@@ -73,7 +73,14 @@ program
             : info.optional
               ? chalk.yellow('✗ Not installed (optional)')
               : chalk.red('✗ Not installed (required)');
-          console.log(`  ${info.name}: ${status}`);
+          let output = `  ${info.name}: ${status}`;
+          if (info.installed && info.version) {
+            output += chalk.gray(` (v${info.version})`);
+            if (info.command) {
+              output += chalk.gray(` [${info.command}]`);
+            }
+          }
+          console.log(output);
         }
 
         const hasRequired = Object.values(requirements)
