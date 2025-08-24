@@ -236,6 +236,34 @@ After generation, verify the project works:
 6. **Merge & Tag**: After approval
 7. **Publish to NPM**: `npm publish`
 
+### 11. Version Bumping Rules
+**ALWAYS update version when merging to main:**
+- **PATCH (x.x.+1)**: Bug fixes, dependency updates, minor improvements
+  - Any bug fix merged to main
+  - Dependency security updates
+  - Documentation fixes that affect functionality
+  - Template fixes (Docker, config, etc.)
+  
+- **MINOR (x.+1.0)**: New features, enhancements
+  - New CLI features or options
+  - New template features
+  - Significant improvements to existing features
+  - Non-breaking API changes
+  
+- **MAJOR (+1.0.0)**: Breaking changes
+  - Changes to CLI interface that break existing usage
+  - Template structure changes that affect existing projects
+  - Removal of features or options
+  - Changes requiring user migration
+
+**Version bump NOT required for:**
+- Documentation-only changes (README, comments) unless significant
+- Dev dependency updates that don't affect build/output
+- CI/CD workflow changes
+- Test-only changes
+
+**Important:** Every PR that affects users MUST include a version bump
+
 ## 🎯 GOLDEN RULES
 
 1. **If it's not tested, it's broken**
