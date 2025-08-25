@@ -26,7 +26,7 @@ class DockerRuntimeTest {
     try {
       if (fs.existsSync(this.testDir)) {
         // Stop containers
-        execSync(`cd ${this.testDir} && docker-compose down -v 2>/dev/null || true`, { 
+        execSync(`cd ${this.testDir} && docker compose down -v 2>/dev/null || true`, { 
           stdio: 'pipe' 
         });
         // Remove directory
@@ -89,7 +89,7 @@ BACKEND_CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
       // Build frontend
       console.log(chalk.yellow('Building frontend...'));
       const frontendBuild = execSync(
-        `cd ${this.testDir} && docker-compose build frontend 2>&1`,
+        `cd ${this.testDir} && docker compose build frontend 2>&1`,
         { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 }
       );
       
@@ -102,7 +102,7 @@ BACKEND_CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
       // Build backend
       console.log(chalk.yellow('Building backend...'));
       execSync(
-        `cd ${this.testDir} && docker-compose build backend 2>&1`,
+        `cd ${this.testDir} && docker compose build backend 2>&1`,
         { encoding: 'utf8', stdio: 'pipe' }
       );
       
@@ -122,7 +122,7 @@ BACKEND_CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
     try {
       // Start containers
       execSync(
-        `cd ${this.testDir} && docker-compose up -d`,
+        `cd ${this.testDir} && docker compose up -d`,
         { stdio: 'pipe' }
       );
       
@@ -145,7 +145,7 @@ BACKEND_CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
     try {
       // Get logs
       const logs = execSync(
-        `cd ${this.testDir} && docker-compose logs frontend 2>&1`,
+        `cd ${this.testDir} && docker compose logs frontend 2>&1`,
         { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
       );
       

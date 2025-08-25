@@ -38,7 +38,7 @@ class PrePushValidator {
   async cleanup() {
     try {
       // Stop any running containers
-      await execAsync(`cd ${this.testDir} && docker-compose down -v 2>/dev/null || true`).catch(() => {});
+      await execAsync(`cd ${this.testDir} && docker compose down -v 2>/dev/null || true`).catch(() => {});
       // Remove test directory
       await fs.remove(this.testDir);
     } catch (e) {
@@ -244,7 +244,7 @@ class PrePushValidator {
     
     try {
       // Validate docker-compose syntax
-      execSync(`cd ${this.testDir} && docker-compose config`, { stdio: 'pipe' });
+      execSync(`cd ${this.testDir} && docker compose config`, { stdio: 'pipe' });
       
       spinner.succeed(chalk.green('Docker-compose validation passed'));
       return true;
