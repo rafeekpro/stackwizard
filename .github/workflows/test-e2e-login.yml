@@ -4,6 +4,8 @@
 name: E2E Login Test
 
 on:
+  workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # Original triggers disabled - see git history
   push:
     branches: [main]
     paths:

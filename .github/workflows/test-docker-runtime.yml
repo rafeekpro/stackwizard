@@ -4,6 +4,8 @@
 name: Test Docker Runtime
 
 on:
+  workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # Original triggers disabled - see git history
   pull_request:
     paths:
       - 'templates/**'

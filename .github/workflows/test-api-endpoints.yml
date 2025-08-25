@@ -4,10 +4,14 @@
 name: API Endpoint Check
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # Original triggers disabled - see git history
+  workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # Original triggers disabled:
+  # push:
+  #   branches: [ main, develop ]
+  # pull_request:
+  #   branches: [ main ]
 
 jobs:
   test-api-endpoints:

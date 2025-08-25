@@ -4,6 +4,8 @@
 name: Docker Integration Test
 
 on:
+  workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # Original triggers disabled - see git history
   push:
     branches: [main, develop, release/*]
   pull_request:
