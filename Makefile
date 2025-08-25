@@ -107,6 +107,104 @@ docker-build-test: ## Build and test Docker images locally
 	@cd templates/common/backend && docker build -t test-backend .
 	@echo "$(GREEN)✅ Docker images built successfully!$(NC)"
 
+# Cypress Visual Testing
+cypress-install: ## Install Cypress and dependencies
+	@echo "$(YELLOW)Installing Cypress...$(NC)"
+	@npm install
+	@npx cypress install
+	@echo "$(GREEN)✅ Cypress installed!$(NC)"
+
+cypress-open: ## Open Cypress Test Runner (interactive mode)
+	@echo "$(YELLOW)Opening Cypress Test Runner...$(NC)"
+	@echo "$(BLUE)Make sure your app is running on http://localhost:3000$(NC)"
+	@npx cypress open
+
+cypress-run: ## Run Cypress tests in headless mode
+	@echo "$(YELLOW)Running Cypress tests...$(NC)"
+	@npx cypress run
+
+cypress-mui: ## Test MUI template with Cypress (visual mode)
+	@echo "$(YELLOW)Starting MUI template for Cypress testing...$(NC)"
+	@make generate-mui
+	@cd ../test-cypress-mui && docker-compose up -d
+	@echo "$(BLUE)Waiting for services to start...$(NC)"
+	@sleep 15
+	@echo "$(GREEN)Services started! Opening Cypress...$(NC)"
+	@CYPRESS_baseUrl=http://localhost:3000 CYPRESS_env__template=mui npx cypress open
+	@echo "$(YELLOW)After testing, run: cd ../test-cypress-mui && docker-compose down$(NC)"
+
+cypress-tailwind: ## Test Tailwind template with Cypress (visual mode)
+	@echo "$(YELLOW)Starting Tailwind template for Cypress testing...$(NC)"
+	@make generate-tailwind
+	@cd ../test-cypress-tailwind && docker-compose up -d
+	@echo "$(BLUE)Waiting for services to start...$(NC)"
+	@sleep 15
+	@echo "$(GREEN)Services started! Opening Cypress...$(NC)"
+	@CYPRESS_baseUrl=http://localhost:3000 CYPRESS_env__template=tailwind npx cypress open
+	@echo "$(YELLOW)After testing, run: cd ../test-cypress-tailwind && docker-compose down$(NC)"
+
+cypress-both: ## Run Cypress tests for both templates (headless)
+	@echo "$(YELLOW)Testing both templates with Cypress...$(NC)"
+	@make cypress-test-mui-headless
+	@make cypress-test-tailwind-headless
+	@echo "$(GREEN)✅ All Cypress tests completed!$(NC)"
+
+cypress-test-mui-headless: ## Test MUI template headless
+	@echo "$(YELLOW)Testing MUI template (headless)...$(NC)"
+	@make generate-mui
+	@cd ../test-cypress-mui && docker-compose up -d
+	@sleep 15
+	@CYPRESS_baseUrl=http://localhost:3000 CYPRESS_env__template=mui npx cypress run --spec "cypress/e2e/mui/**/*.cy.js"
+	@cd ../test-cypress-mui && docker-compose down
+	@rm -rf ../test-cypress-mui
+	@echo "$(GREEN)✅ MUI tests passed!$(NC)"
+
+cypress-test-tailwind-headless: ## Test Tailwind template headless
+	@echo "$(YELLOW)Testing Tailwind template (headless)...$(NC)"
+	@make generate-tailwind
+	@cd ../test-cypress-tailwind && docker-compose up -d
+	@sleep 15
+	@CYPRESS_baseUrl=http://localhost:3000 CYPRESS_env__template=tailwind npx cypress run --spec "cypress/e2e/tailwind/**/*.cy.js"
+	@cd ../test-cypress-tailwind && docker-compose down
+	@rm -rf ../test-cypress-tailwind
+	@echo "$(GREEN)✅ Tailwind tests passed!$(NC)"
+
+generate-mui: ## Generate MUI test project
+	@echo "$(YELLOW)Generating MUI test project...$(NC)"
+	@rm -rf ../test-cypress-mui 2>/dev/null || true
+	@echo "test-cypress-mui\n\ntest_db\ntest_user\ntest_pass\n8000\n3000" | npm start || true
+	@if [ ! -d "../test-cypress-mui" ]; then \
+		echo "$(RED)Failed to generate project with CLI, using manual copy...$(NC)"; \
+		mkdir -p ../test-cypress-mui; \
+		cp -r templates/frontend-mui ../test-cypress-mui/frontend; \
+		cp -r templates/common/backend ../test-cypress-mui/backend; \
+		cp templates/common/docker-compose.yml ../test-cypress-mui/; \
+		cp templates/common/.env.example ../test-cypress-mui/.env; \
+	fi
+	@echo "$(GREEN)✅ MUI project generated!$(NC)"
+
+generate-tailwind: ## Generate Tailwind test project
+	@echo "$(YELLOW)Generating Tailwind test project...$(NC)"
+	@rm -rf ../test-cypress-tailwind 2>/dev/null || true
+	@echo "test-cypress-tailwind\n2\ntest_db\ntest_user\ntest_pass\n8000\n3000" | npm start || true
+	@if [ ! -d "../test-cypress-tailwind" ]; then \
+		echo "$(RED)Failed to generate project with CLI, using manual copy...$(NC)"; \
+		mkdir -p ../test-cypress-tailwind; \
+		cp -r templates/frontend-tailwind ../test-cypress-tailwind/frontend; \
+		cp -r templates/common/backend ../test-cypress-tailwind/backend; \
+		cp templates/common/docker-compose.yml ../test-cypress-tailwind/; \
+		cp templates/common/.env.example ../test-cypress-tailwind/.env; \
+	fi
+	@echo "$(GREEN)✅ Tailwind project generated!$(NC)"
+
+cypress-watch: ## Watch Cypress tests with live reload
+	@echo "$(YELLOW)Starting Cypress in watch mode...$(NC)"
+	@npx cypress open --e2e --browser chrome
+
+cypress-record: ## Record Cypress test videos
+	@echo "$(YELLOW)Recording Cypress test videos...$(NC)"
+	@npx cypress run --record --key $(CYPRESS_RECORD_KEY)
+
 # GitHub integration
 gh-sync: ## Sync with GitHub (fetch + pull + prune)
 	@echo "$(YELLOW)Syncing with GitHub...$(NC)"
