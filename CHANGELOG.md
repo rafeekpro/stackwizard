@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2025-08-25
+
+### 🐛 Bug Fixes
+- **CRITICAL**: Fixed Docker build failures with missing @mui/material dependencies
+- Added fallback installation for critical frontend dependencies in Dockerfiles
+- Improved Docker build reliability with npm ci fallback to npm install
+- Added dependency verification step to ensure UI libraries are properly installed
+
 ## [1.3.0] - 2025-08-25
 
 ### ✨ New Features
