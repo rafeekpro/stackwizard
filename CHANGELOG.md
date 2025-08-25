@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2025-08-24
+
+### 🐛 Bug Fixes
+- **Docker npm dependencies** - Fixed missing dependencies in containers
+  - Use `npm ci` for respecting package-lock.json
+  - Fallback to `npm install` if lock file is missing
+  - Resolves issues with @headlessui/react and @heroicons/react in Tailwind template
+
+### 📚 Documentation
+- **Version Management Rules** - Added clear version bumping guidelines to CLAUDE.md
+  - Specified when to increment PATCH, MINOR, or MAJOR versions
+  - Listed when version updates are required vs optional
+  - Ensures consistent versioning practices
+
 ## [1.1.1] - 2025-08-24
 
 ### ✨ New Features
