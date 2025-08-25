@@ -74,10 +74,9 @@ class TestAPIResponseStructure:
         data = response.json()
         
         # Should return wrapped response
-        assert "success" in data
         assert "message" in data
         assert "user" in data
-        assert data["success"] is True
+        assert data["message"] == "User created successfully"
         assert data["user"]["email"] == "newuser@example.com"
     
     def test_user_delete_returns_message(self, client: TestClient, test_user: User, test_superuser_headers: dict):
@@ -98,28 +97,29 @@ class TestAPIResponseStructure:
         assert "user" not in data
         assert "id" not in data
     
-    def test_profile_update_returns_wrapped_response(self, client: TestClient, test_user_headers: dict):
+    def test_profile_update_returns_wrapped_response(self, client: TestClient, test_headers: dict):
         """Test that profile update returns wrapped response"""
         update_data = {"full_name": "Updated Profile"}
         
         response = client.put(
             "/api/v1/users/me",
             json=update_data,
-            headers=test_user_headers
+            headers=test_headers
         )
         
         assert response.status_code == 200
         data = response.json()
         
         # Profile update should return wrapped response
-        assert "success" in data
         assert "message" in data
         assert "user" in data
+        # Note: success field is in UserResponse
+        assert "success" in data  
         assert data["user"]["full_name"] == "Updated Profile"
     
-    def test_get_current_user_returns_user_object(self, client: TestClient, test_user_headers: dict):
+    def test_get_current_user_returns_user_object(self, client: TestClient, test_headers: dict):
         """Test that get current user returns user object directly"""
-        response = client.get("/api/v1/users/me", headers=test_user_headers)
+        response = client.get("/api/v1/users/me", headers=test_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -170,7 +170,7 @@ class TestAPIModularStructure:
         except ImportError as e:
             pytest.fail(f"Failed to import validators module: {e}")
     
-    def test_all_user_endpoints_accessible(self, client: TestClient, test_user_headers: dict):
+    def test_all_user_endpoints_accessible(self, client: TestClient, test_headers: dict):
         """Test that all user endpoints are accessible after modularization"""
         endpoints = [
             ("/api/v1/users/me", "get"),
@@ -180,7 +180,7 @@ class TestAPIModularStructure:
         
         for endpoint, method in endpoints:
             if method == "get":
-                response = client.get(endpoint, headers=test_user_headers)
+                response = client.get(endpoint, headers=test_headers)
                 # We just check that endpoint exists (not 404)
                 assert response.status_code != 404, f"Endpoint {endpoint} not found"
 

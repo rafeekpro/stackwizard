@@ -236,7 +236,10 @@ async def delete_user_by_admin(
             detail="Cannot delete your own account"
         )
     
-    db.delete(user)
+    # Soft delete - just deactivate the user
+    user.is_active = False
+    user.updated_at = datetime.now(timezone.utc)
+    
     await db.commit()
     
     return MessageResponse(message="User deleted successfully")

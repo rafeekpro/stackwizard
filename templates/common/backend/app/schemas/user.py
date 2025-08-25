@@ -178,6 +178,7 @@ class EmailVerification(BaseModel):
 
 # Response schemas
 class UserResponse(BaseModel):
+    success: bool = True
     user: User
     message: str
 
