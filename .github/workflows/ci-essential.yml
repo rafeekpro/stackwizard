@@ -16,7 +16,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - run: npm ci
+      - name: Install dependencies with retry
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 60
+          command: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
       - run: npm run lint
       - run: npm run format:check
   
@@ -29,7 +35,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - run: npm ci
+      - name: Install dependencies with retry
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 60
+          command: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
       - name: Test generator CLI
         run: |
           node src/index.js --help
