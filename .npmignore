@@ -75,6 +75,8 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 .pnp.*
+# Don't ignore package-lock.json in templates - it's needed for Docker builds
+!templates/**/package-lock.json
 
 # Temporary files
 tmp/
