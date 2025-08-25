@@ -30,7 +30,18 @@ class RealDockerDepsTest {
       // Stop any running containers
       execSync(`docker stop $(docker ps -q --filter "name=${this.projectName}") 2>/dev/null || true`, {
         stdio: 'pipe'
-      });
+      const containerIds = execSync(`docker ps -q --filter "name=${this.projectName}"`, { stdio: 'pipe' })
+        .toString()
+        .split('\n')
+        .map(id => id.trim())
+        .filter(id => id.length > 0);
+      for (const id of containerIds) {
+        try {
+          execSync(`docker stop ${id}`, { stdio: 'pipe' });
+        } catch (e) {
+          // Ignore errors stopping containers
+        }
+      }
       // Remove test directory
       await fs.remove(this.testDir);
     } catch (e) {
