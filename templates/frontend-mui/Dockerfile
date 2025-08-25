@@ -9,7 +9,7 @@ COPY package.json ./
 # This is more reliable than npm ci which can fail silently
 RUN npm install --legacy-peer-deps && \
     # Explicitly verify critical dependencies are installed
-    npm ls @mui/material @mui/icons-material @emotion/react @emotion/styled || \
+    npm ls --depth=0 @mui/material @mui/icons-material @emotion/react @emotion/styled || \
     (echo "ERROR: Failed to install MUI dependencies" && exit 1)
 
 # Now copy the rest of the application
