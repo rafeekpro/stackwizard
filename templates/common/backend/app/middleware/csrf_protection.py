@@ -145,10 +145,7 @@ class CSRFProtectionMiddleware(BaseHTTPMiddleware):
         
         # Check JSON body if no header token
         if not header_token and request.headers.get("content-type", "").startswith("application/json"):
-            try:
-                body = await request.json()
-                header_token = body.get("csrf_token") or body.get("_csrf")
-            except:
+            except (JSONDecodeError, ValueError):
                 pass
         
         if not header_token:
