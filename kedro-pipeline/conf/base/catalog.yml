@@ -1,0 +1,157 @@
+# Data Catalog - definiuje inputs/outputs dla pipeline
+
+# Parameters dataset
+parameters:
+  type: MemoryDataset
+
+# Pipeline outputs
+project_info:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/project_info.json
+
+docker_build_results:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/docker_build_results.json
+
+container_test_results:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/container_test_results.json
+
+unit_test_results:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/unit_test_results.json
+  
+validation_report:
+  type: json.JSONDataset
+  filepath: data/03_primary/validation_report.json
+
+cleanup_results:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/cleanup_results.json
+
+validation_passed:
+  type: json.JSONDataset
+  filepath: data/04_feature/validation_passed.json
+
+# Legacy outputs
+test_config:
+  type: yaml.YAMLDataset
+  filepath: data/01_raw/test_config.yml
+
+docker_test_results:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/docker_test_results.json
+
+ci_status:
+  type: json.JSONDataset
+  filepath: data/04_feature/ci_status.json
+
+release_artifacts:
+  type: json.JSONDataset
+  filepath: data/05_model_input/release_artifacts.json
+
+# Package test outputs
+package_json_validation:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/package_json_validation.json
+
+npm_package_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/npm_package_test.json
+
+package_install_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/package_install_test.json
+
+# Structure test outputs
+structure_project_info:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/structure_project_info.json
+
+structure_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/structure_test.json
+
+file_contents_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/file_contents_test.json
+
+gitignore_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/gitignore_test.json
+
+structure_cleanup:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/structure_cleanup.json
+
+# Docker test outputs
+docker_project_info:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/docker_project_info.json
+
+docker_compose_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/docker_compose_test.json
+
+dockerfile_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/dockerfile_test.json
+
+docker_build_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/docker_build_test.json
+
+docker_up_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/docker_up_test.json
+
+docker_cleanup:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/docker_cleanup.json
+
+# E2E test outputs
+e2e_project_info:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/e2e_project_info.json
+
+health_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/health_test.json
+
+login_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/login_test.json
+
+crud_test:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/crud_test.json
+
+e2e_cleanup:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/e2e_cleanup.json
+
+# Final report
+final_test_report:
+  type: json.JSONDataset
+  filepath: data/03_primary/final_test_report.json
+
+# Database pipeline outputs
+db_info:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/db_info.json
+
+schema_info:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/schema_info.json
+
+data_info:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/data_info.json
+
+db_verification:
+  type: json.JSONDataset
+  filepath: data/03_primary/db_verification.json
+
+db_cleanup:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/db_cleanup.json

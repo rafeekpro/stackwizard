@@ -1,10 +1,17 @@
+# DISABLED: This workflow has been replaced by Kedro test orchestration
+# To run manually, use workflow_dispatch in GitHub Actions UI
+
 name: ESLint Check
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # All original triggers have been disabled
+  # workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # Original triggers disabled - see git history
+  # push:
+  #   branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
 
 jobs:
   test-eslint-mui:

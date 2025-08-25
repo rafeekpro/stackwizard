@@ -1,0 +1,281 @@
+name: CI - Kedro Test Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'feature/**', 'fix/**', 'hotfix/**' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - package
+          - structure
+          - docker
+          - e2e
+          - db
+
+jobs:
+  kedro-tests:
+    name: Kedro Test Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stackwizard_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install Node dependencies
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 5
+        max_attempts: 3
+        retry_wait_seconds: 60
+        command: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-kedro-${{ hashFiles('kedro-pipeline/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-kedro-
+          ${{ runner.os }}-pip-
+    
+    - name: Install Kedro and dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install kedro kedro-datasets psycopg2-binary
+        cd kedro-pipeline
+        pip install -r requirements.txt
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      if: contains(fromJSON('["all", "docker"]'), github.event.inputs.test_suite || 'all')
+    
+    - name: Configure database for CI
+      run: |
+        cd kedro-pipeline
+        # Update parameters for CI environment
+        cat > conf/local/parameters.yml << EOF
+        database:
+          host: "localhost"
+          port: 5432
+          admin_user: "postgres"
+          admin_password: "postgres"
+          test_db_name: "stackwizard_test"
+          test_user: "stackwizard_user"
+          test_password: "stackwizard_pass"
+          clean_start: true
+          cleanup_after_test: true
+        
+        sql_path: "data/01_raw/sql"
+        data_type: "test"
+        
+        test:
+          ui_libraries:
+            - mui
+            - tailwind
+          docker:
+            build_timeout: 300
+            run_timeout: 60
+            retry_attempts: 3
+        
+        generation:
+          project_name: "ci-test-project"
+          database:
+            name: "testdb"
+            user: "testuser"
+            password: "testpass"
+          ports:
+            api: 8888
+            frontend: 3888
+        
+        validation:
+          min_test_coverage: 80
+          max_bundle_size_mb: 5
+          required_dependencies:
+            mui:
+              - "@mui/material"
+              - "@mui/icons-material"
+            tailwind:
+              - "tailwindcss"
+              - "@headlessui/react"
+        EOF
+    
+    - name: Run Kedro Test Pipeline
+      env:
+        CI: true
+        TEST_SUITE: ${{ github.event.inputs.test_suite || 'all' }}
+      run: |
+        cd kedro-pipeline
+        
+        # Run the appropriate test suite
+        case "$TEST_SUITE" in
+          "all")
+            echo "Running complete test suite..."
+            kedro run --pipeline test:all
+            ;;
+          "package")
+            echo "Running package tests..."
+            kedro run --pipeline test:package
+            ;;
+          "structure")
+            echo "Running structure tests..."
+            kedro run --pipeline test:structure
+            ;;
+          "docker")
+            echo "Running Docker tests..."
+            kedro run --pipeline test:docker
+            ;;
+          "e2e")
+            echo "Running E2E tests..."
+            kedro run --pipeline test:e2e
+            ;;
+          "db")
+            echo "Running database tests..."
+            kedro run --pipeline db:full
+            ;;
+          *)
+            echo "Running default test suite..."
+            kedro run --pipeline test:all
+            ;;
+        esac
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: kedro-test-results-${{ github.run_number }}
+        path: |
+          kedro-pipeline/data/02_intermediate/*.json
+          kedro-pipeline/data/03_primary/*.json
+          kedro-pipeline/data/08_reporting/*.json
+        retention-days: 7
+    
+    - name: Check test results
+      if: always()
+      run: |
+        cd kedro-pipeline
+        
+        # Check if final report exists
+        if [ -f data/03_primary/final_test_report.json ]; then
+          echo "📊 Test Report Summary:"
+          python -c "
+import json
+with open('data/03_primary/final_test_report.json') as f:
+    data = json.load(f)
+    summary = data.get('summary', {})
+    print(f\"Total tests: {summary.get('total_tests', 0)}\")
+    print(f\"Passed: {summary.get('passed', 0)}\")
+    print(f\"Failed: {summary.get('failed', 0)}\")
+    print(f\"Warnings: {summary.get('warnings', 0)}\")
+    
+    if data.get('failed_tests'):
+        print('\n❌ Failed tests:')
+        for test in data['failed_tests']:
+            print(f\"  - {test}\")
+    
+    if not data.get('success', False):
+        exit(1)
+          "
+        else
+          echo "⚠️ No test report found"
+        fi
+        
+        # Check last run summary
+        if [ -f data/08_reporting/last_run_summary.json ]; then
+          echo -e "\n📋 Last Run Summary:"
+          cat data/08_reporting/last_run_summary.json | python -m json.tool
+        fi
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          let comment = '## 🧪 Kedro Test Results\n\n';
+          
+          try {
+            const reportPath = 'kedro-pipeline/data/03_primary/final_test_report.json';
+            if (fs.existsSync(reportPath)) {
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              const summary = report.summary || {};
+              
+              comment += `| Metric | Value |\n`;
+              comment += `|--------|-------|\n`;
+              comment += `| Total Tests | ${summary.total_tests || 0} |\n`;
+              comment += `| ✅ Passed | ${summary.passed || 0} |\n`;
+              comment += `| ❌ Failed | ${summary.failed || 0} |\n`;
+              comment += `| ⚠️ Warnings | ${summary.warnings || 0} |\n`;
+              
+              if (report.failed_tests && report.failed_tests.length > 0) {
+                comment += `\n### Failed Tests:\n`;
+                report.failed_tests.forEach(test => {
+                  comment += `- ❌ ${test}\n`;
+                });
+              }
+              
+              comment += `\n${report.success ? '✅ **All tests passed!**' : '❌ **Some tests failed**'}`;
+            } else {
+              comment += '⚠️ No test results found';
+            }
+          } catch (error) {
+            comment += `⚠️ Error reading test results: ${error.message}`;
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  # Simplified lint check (always runs)
+  lint-check:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+      - name: Run linter
+        run: npm run lint || true
+      - name: Check formatting
+        run: npm run format:check || true

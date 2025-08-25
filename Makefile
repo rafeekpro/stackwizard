@@ -221,3 +221,34 @@ test-parallel: ## Run tests in parallel (faster)
 		"npm:lint" \
 		"npm:format:check"
 	@echo "$(GREEN)✅ All parallel tests passed!$(NC)"
+
+# Kedro Pipeline Integration
+kedro-install: ## Install Kedro pipeline dependencies
+	@echo "$(YELLOW)Installing Kedro dependencies...$(NC)"
+	@cd kedro-pipeline && pip install -r requirements.txt
+	@echo "$(GREEN)✅ Kedro dependencies installed!$(NC)"
+
+kedro-test: ## Run Kedro validation pipeline
+	@echo "$(YELLOW)Running Kedro validation pipeline...$(NC)"
+	@npm run test:kedro
+	@echo "$(GREEN)✅ Kedro pipeline completed!$(NC)"
+
+kedro-quick: ## Run quick Kedro pipeline (no Docker)
+	@echo "$(YELLOW)Running quick Kedro pipeline...$(NC)"
+	@npm run test:kedro:quick
+	@echo "$(GREEN)✅ Quick pipeline completed!$(NC)"
+
+kedro-release: ## Run Kedro release pipeline
+	@echo "$(YELLOW)Running Kedro release pipeline...$(NC)"
+	@npm run test:kedro:release
+	@echo "$(GREEN)✅ Release pipeline completed!$(NC)"
+
+kedro-viz: ## Launch Kedro visualization dashboard
+	@echo "$(YELLOW)Starting Kedro Viz...$(NC)"
+	@cd kedro-pipeline && kedro viz run
+	
+kedro-clean: ## Clean Kedro pipeline outputs
+	@echo "$(YELLOW)Cleaning Kedro outputs...$(NC)"
+	@rm -rf kedro-pipeline/data/* 2>/dev/null || true
+	@rm -rf kedro-pipeline/logs/* 2>/dev/null || true
+	@echo "$(GREEN)✅ Kedro outputs cleaned!$(NC)"

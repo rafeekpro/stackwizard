@@ -1,0 +1,59 @@
+# Pipeline parameters
+
+# Database configuration
+database:
+  host: "localhost"
+  port: 5432
+  admin_user: "rafal.lagowski"
+  admin_password: ""
+  test_db_name: "stackwizard_test"
+  test_user: "stackwizard_user"
+  test_password: "stackwizard_pass"
+  clean_start: true
+  cleanup_after_test: false
+
+# SQL files configuration
+sql_path: "data/01_raw/sql"
+data_type: "seed"  # "seed" for development, "test" for tests
+
+# Test configuration
+test:
+  ui_libraries:
+    - mui
+    - tailwind
+  docker:
+    build_timeout: 300
+    run_timeout: 60
+    retry_attempts: 3
+  
+# Project generation settings  
+generation:
+  project_name: "test-kedro-project"
+  database:
+    name: "testdb"
+    user: "testuser"
+    password: "testpass"
+  ports:
+    api: 8888
+    frontend: 3888
+
+# Validation thresholds
+validation:
+  min_test_coverage: 80
+  max_bundle_size_mb: 5
+  required_dependencies:
+    mui:
+      - "@mui/material"
+      - "@mui/icons-material"
+      - "@emotion/react"
+      - "@emotion/styled"
+    tailwind:
+      - "@headlessui/react"
+      - "@heroicons/react"
+      - "tailwindcss"
+
+# CI/CD settings
+ci:
+  parallel_jobs: 4
+  npm_retry_attempts: 3
+  npm_retry_delay: 60

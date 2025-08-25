@@ -1,18 +1,25 @@
+# DISABLED: This workflow has been replaced by Kedro test orchestration
+# To run manually, use workflow_dispatch in GitHub Actions UI
+
 name: React Router Issues Test
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'templates/frontend-*/**'
-      - 'test/test-react-router-issues.js'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'templates/frontend-*/**'
-      - 'test/test-react-router-issues.js'
-      - '.github/workflows/test-react-router.yml'
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # All original triggers have been disabled
+  # workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # Original triggers disabled - see git history
+  # push:
+  # branches: [main]
+  # paths:
+  # - 'templates/frontend-*/**'
+  # - 'test/test-react-router-issues.js'
+  # pull_request:
+  # branches: [main]
+  # paths:
+  # - 'templates/frontend-*/**'
+  # - 'test/test-react-router-issues.js'
+  # - '.github/workflows/test-react-router.yml'
+  # workflow_dispatch: # Allow manual trigger
 
 jobs:
   react-router-test:
@@ -32,10 +39,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y expect
 
-      - name: Install dependencies
-        run: |
-          npm ci
-          npm install --no-save puppeteer
+      - name: Install dependencies with retry
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 60
+          command: |
+            npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+            npm install --no-save puppeteer
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2

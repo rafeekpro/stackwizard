@@ -1,0 +1,36 @@
+# Local overrides for docker-compose.yml
+# Copy this file to docker-compose.override.yml and modify as needed
+# docker-compose.override.yml is ignored by git
+
+version: '3.8'
+
+services:
+  backend:
+    # Mount local code for hot reload
+    volumes:
+      - ./backend:/app
+      - /app/.venv  # Exclude virtual environment
+    # Enable debugging
+    environment:
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+      DEBUG: "true"
+    # Use different command for debugging
+    # command: python -m debugpy --listen 0.0.0.0:5678 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    
+  frontend:
+    # Mount local code for hot reload
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Exclude node_modules
+    # Enable React DevTools
+    environment:
+      REACT_APP_DEV_TOOLS: "true"
+      GENERATE_SOURCEMAP: "true"
+    
+  postgres:
+    # Use local port if needed
+    # ports:
+    #   - "5433:5432"
+    # Enable query logging
+    command: ["postgres", "-c", "log_statement=all", "-c", "log_duration=on"]

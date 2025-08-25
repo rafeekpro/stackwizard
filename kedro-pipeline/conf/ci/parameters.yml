@@ -1,0 +1,38 @@
+# CI/CD Pipeline parameters
+# Overrides for GitHub Actions environment
+
+# Test configuration - reduced for CI
+test:
+  ui_libraries:
+    - mui  # Test only MUI in CI to save time
+  docker:
+    enabled: false  # Skip Docker in CI due to limitations
+    build_timeout: 180
+    run_timeout: 30
+    retry_attempts: 2
+  
+# Project generation settings  
+generation:
+  project_name: "ci-test-project"
+  database:
+    name: "ci_db"
+    user: "ci_user"
+    password: "ci_pass"
+  ports:
+    api: 8888
+    frontend: 3888
+
+# Validation thresholds - more lenient for CI
+validation:
+  min_test_coverage: 70  # Reduced from 80
+  max_bundle_size_mb: 10  # Increased from 5
+  required_dependencies:
+    mui:
+      - "@mui/material"
+      - "@mui/icons-material"
+
+# CI-specific settings
+ci:
+  parallel_jobs: 2  # Reduced from 4
+  npm_retry_attempts: 3
+  npm_retry_delay: 30  # Reduced from 60

@@ -208,6 +208,41 @@ Your application will be available at:
 
 ## 🛠️ Development Workflow
 
+### Complete Development Environment (New!)
+Full-featured development environment with hot-reload, database management, and debugging tools:
+
+```bash
+# Navigate to dev environment
+cd dev-environment
+
+# Setup environment
+cp .env.example .env
+
+# Start all services (PostgreSQL, Redis, FastAPI, React, Adminer, MailHog)
+make start
+# or
+./scripts/dev.sh start
+
+# Access services
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8000
+# API Docs: http://localhost:8000/docs
+# Database Admin: http://localhost:8080
+# Email Testing: http://localhost:8025
+
+# Database management
+make db-reset     # Reset to clean state with SQL files
+make db-backup    # Create backup
+make db-restore   # Restore from backup
+make db-seed      # Load test data
+
+# Development commands
+make logs         # View all logs
+make shell        # Backend shell
+make shell-db     # PostgreSQL shell
+make test         # Run all tests
+```
+
 ### Without Docker
 
 **Backend Development:**
@@ -237,6 +272,26 @@ alembic upgrade head
 ```
 
 ## 🧪 Testing & Validation
+
+### Kedro Test Pipeline (New!)
+Advanced test orchestration with visual pipeline monitoring:
+
+```bash
+# Run specific test suites
+npm run test:kedro:package    # Test npm package integrity
+npm run test:kedro:structure  # Test project structure generation
+npm run test:kedro:docker     # Test Docker configuration
+npm run test:kedro:e2e        # Run end-to-end tests
+npm run test:kedro:all        # Run complete test suite
+
+# Database testing with SQL files
+npm run test:kedro:db         # Initialize test database from SQL
+npm run test:kedro:db:cleanup # Clean up test database
+npm run test:kedro:db:full    # Full database test cycle
+
+# Visual pipeline monitoring
+kedro viz run                  # Open at http://127.0.0.1:4141/
+```
 
 ### Visual Testing with Cypress
 Watch your tests run in real-time:
@@ -280,6 +335,42 @@ npm run test:orchestrate       # Smart mode
 npm run test:orchestrate:full  # Full test suite
 ```
 
+## 📁 Project Structure
+
+```
+project-generator-cli/
+├── src/                        # Generator source code
+│   └── index.js               # Main CLI application
+├── templates/                  # Project templates
+│   ├── common/                # Shared templates
+│   │   ├── backend/          # FastAPI backend template
+│   │   ├── database/         # PostgreSQL initialization
+│   │   └── docker-compose.yml # Docker orchestration
+│   ├── frontend-mui/          # Material UI template
+│   └── frontend-tailwind/     # Tailwind CSS template
+├── kedro-pipeline/            # Test orchestration (NEW!)
+│   ├── src/                  # Pipeline implementation
+│   │   └── stackwizard_pipeline/
+│   │       ├── nodes/        # Test functions
+│   │       └── pipelines/    # Test workflows
+│   ├── data/                 # Test data and results
+│   │   └── 01_raw/sql/      # SQL initialization files
+│   │       ├── schema/      # Database schema
+│   │       ├── seed/        # Development data
+│   │       └── test/        # Test data
+│   └── conf/                 # Pipeline configuration
+├── dev-environment/           # Development environment (NEW!)
+│   ├── backend/              # FastAPI development
+│   ├── frontend/             # React development
+│   ├── database/             # Database management
+│   ├── scripts/              # Helper scripts
+│   │   └── dev.sh           # Development CLI
+│   ├── docker-compose.yml    # Service orchestration
+│   └── Makefile             # Quick commands
+└── test/                      # Legacy test files
+
+```
+
 ## 📦 System Requirements
 
 - Node.js 16.0.0 or higher
@@ -315,6 +406,13 @@ This project leverages modern, production-ready technologies:
 - [Alembic](https://alembic.sqlalchemy.org/) - Database migration tool
 - [Material-UI](https://mui.com/) - React component library
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+
+## 📚 Documentation
+
+- **[TESTING.md](./TESTING.md)** - Complete testing guide with Kedro pipelines
+- **[SCRIPTS.md](./SCRIPTS.md)** - NPM scripts reference
+- **[CLAUDE.md](./CLAUDE.md)** - Development guidelines for AI assistants
+- **[dev-environment/README.md](./dev-environment/README.md)** - Development environment setup
 
 ## 📞 Contact & Support
 

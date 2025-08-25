@@ -1,0 +1,24 @@
+# These workflows have been disabled in favor of Kedro test orchestration
+# To re-enable any workflow, remove the "if: false" condition from the job
+
+The following workflows are now handled by Kedro (ci-kedro.yml):
+- test-api-endpoints.yml
+- test-docker-integration.yml
+- test-docker-runtime.yml
+- test-e2e-login.yml
+- test-eslint.yml
+- test-health-endpoints.yml
+- test-npm-package.yml
+- test-react-errors.yml
+- test-react-router.yml
+- test-runtime-api.yml
+- ci-essential.yml
+- pr-check.yml
+- kedro-validation.yml (replaced by ci-kedro.yml)
+
+Active workflows:
+- ci.yml (main CI using Kedro)
+- ci-kedro.yml (Kedro test orchestration)
+- npm-publish.yml (for NPM releases)
+- version-bump.yml (for version management)
+- publish-github-packages.yml (for GitHub packages)
