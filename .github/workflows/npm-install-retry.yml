@@ -1,0 +1,28 @@
+name: NPM Install with Retry
+
+on:
+  workflow_call:
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies with retry
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 30
+          command: |
+            npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+          on_retry_command: |
+            echo "Retrying npm install due to rate limiting..."
+            sleep 30

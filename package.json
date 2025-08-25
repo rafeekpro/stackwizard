@@ -21,6 +21,7 @@
     "test:structure": "node test/test-generated-structure.js",
     "test:docker": "node test/test-docker-compose.js",
     "test:docker-deps": "node test/test-docker-dependencies.js",
+    "test:docker-runtime": "node test/test-docker-runtime.js",
     "test:errors": "jest test/error-handling.test.js --verbose",
     "test:all": "npm run test:package && npm run test:structure && npm run test:errors",
     "test:ci": "npm run test:package && npm run test:structure",

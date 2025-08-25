@@ -1,0 +1,54 @@
+name: Test Docker Runtime
+
+on:
+  pull_request:
+    paths:
+      - 'templates/**'
+      - 'src/**'
+      - '.github/workflows/test-docker-runtime.yml'
+      - 'test/test-docker-runtime.js'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  docker-runtime-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies with retry
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 60
+          command: |
+            npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+      
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Run Docker Runtime Test
+        run: |
+          echo "🧪 Running Docker Runtime Test..."
+          echo "This will ACTUALLY catch dependency errors!"
+          npm run test:docker-runtime
+        env:
+          DOCKER_BUILDKIT: 1
+      
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-logs
+          path: |
+            /tmp/docker-runtime-test-*/docker-compose.logs
+            /tmp/docker-runtime-test-*/frontend.log

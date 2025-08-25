@@ -266,6 +266,18 @@ class PrePushValidator {
       allPassed = false;
     }
     
+    // 2. Run REAL Docker Runtime Test (if available)
+    console.log(chalk.blue('\n🐳 Running Docker Runtime Test...\n'));
+    try {
+      execSync('npm run test:docker-runtime', { stdio: 'inherit' });
+      console.log(chalk.green('✅ Docker runtime test passed'));
+    } catch (error) {
+      console.log(chalk.red('❌ Docker runtime test failed'));
+      console.log(chalk.yellow('This test would have caught the "@mui/material" error!'));
+      allPassed = false;
+      return false; // Stop immediately if Docker test fails
+    }
+    
     // 2. Test MUI template
     console.log(chalk.blue('\n📦 Testing Material UI Template\n'));
     if (await this.generateTestProject('mui')) {
