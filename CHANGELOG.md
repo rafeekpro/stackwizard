@@ -10,10 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.1] - 2025-08-25
 
 ### 🐛 Bug Fixes
-- **CRITICAL**: Fixed Docker build failures with missing @mui/material dependencies
-- Added fallback installation for critical frontend dependencies in Dockerfiles
-- Improved Docker build reliability with npm ci fallback to npm install
-- Added dependency verification step to ensure UI libraries are properly installed
+- **CRITICAL**: Permanent fix for recurring Docker dependency issues
+- Completely redesigned Dockerfile to use `npm install` instead of unreliable `npm ci`
+- Added explicit dependency verification with failure on missing packages
+- Added REAL test that generates actual project and tests Docker build
+- Fixed CI workflows with retry logic for npm 403 errors
+
+### 🔄 Breaking Change in Docker Build
+- Dockerfiles now use `npm install --legacy-peer-deps` for reliability
+- No longer copies package-lock.json initially to avoid corruption issues
 
 ## [1.3.0] - 2025-08-25
 
