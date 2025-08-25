@@ -10,7 +10,10 @@ COPY package.json ./
 RUN npm install --legacy-peer-deps && \
     # Explicitly verify critical dependencies are installed
     npm ls @headlessui/react @heroicons/react tailwindcss || \
-    (echo "ERROR: Failed to install Tailwind dependencies" && exit 1)
+    for pkg in @headlessui/react @heroicons/react tailwindcss; do \
+        npm ls --depth=0 "$pkg" | grep "$pkg" > /dev/null || \
+        (echo "ERROR: Failed to install $pkg" && exit 1); \
+    done
 
 # Now copy the rest of the application
 COPY . .
