@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-08-25
+
+### ✨ New Features
+- **API Structure Optimization** - Complete backend API refactoring for better maintainability
+  - Split large monolithic files into focused, modular components
+  - Created organized user endpoints module with sub-modules (profile, management, statistics, export)
+  - Added comprehensive validation utilities module with 30+ validators
+  - Centralized input validation logic for consistency
+  - Improved code organization with single-responsibility modules
+
+### 🚀 Improvements
+- **Better Test Coverage** - Added comprehensive API structure tests
+  - Tests for response format consistency
+  - Tests for modular imports verification
+  - Tests for validator functionality
+  - Prevention of API structure regression
+
+### 🐛 Bug Fixes
+- **User Deletion** - Changed from hard delete to soft delete for better data retention
+- **Response Structures** - Fixed UserResponse schema to include success field
+- **Test Fixtures** - Corrected fixture references for proper test execution
+
+### 📚 Documentation
+- **Code Organization** - Better separation of concerns with clear module boundaries
+- **Validator Documentation** - Comprehensive validation functions with clear error messages
+
 ## [1.1.2] - 2025-08-24
 
 ### 🐛 Bug Fixes
