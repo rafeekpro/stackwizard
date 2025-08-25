@@ -1,0 +1,18 @@
+[tool.kedro]
+package_name = "stackwizard_pipeline"
+project_name = "StackWizard Validation Pipeline"
+kedro_init_version = "1.0.0"
+source_dir = "src"
+tools = ["kedro"]
+example_pipeline = "stackwizard_pipeline.pipelines.validation_pipeline"
+
+[tool.poetry]
+name = "stackwizard-pipeline"
+version = "0.1.0"
+description = "Kedro pipeline for StackWizard validation and testing"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+[tool.kedro_telemetry]
+project_id = "8de5cbc3aa234f19af8cb477db44fb07"

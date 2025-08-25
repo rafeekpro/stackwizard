@@ -11,7 +11,7 @@ This repository contains **StackWizard** - a magical full-stack project generato
 
 ## Architecture
 
-The generator uses a template-based architecture:
+The generator uses a template-based architecture with advanced testing infrastructure:
 
 ```
 project-generator-cli/
@@ -24,6 +24,15 @@ project-generator-cli/
 │   │   └── .env.example          # Environment configuration
 │   ├── frontend-mui/             # React + Material UI template
 │   └── frontend-tailwind/        # React + Tailwind CSS template
+├── kedro-pipeline/                # Kedro test orchestration
+│   ├── src/stackwizard_pipeline/  # Test implementation
+│   │   ├── nodes/                # Test functions
+│   │   └── pipelines/            # Test workflows
+│   └── data/01_raw/sql/          # SQL test data
+├── dev-environment/               # Development environment
+│   ├── docker-compose.yml        # Multi-service orchestration
+│   ├── scripts/dev.sh            # Development CLI
+│   └── Makefile                  # Quick commands
 ```
 
 ### Backend Architecture (FastAPI)
@@ -39,6 +48,53 @@ Both frontend variants follow similar patterns:
 - **Pages**: Route-based page components
 - **Services**: API client and utilities
 - **Routing**: React Router for SPA navigation
+
+## Testing Infrastructure
+
+### Kedro Pipeline Testing
+The project uses Kedro for advanced test orchestration with visual pipeline monitoring:
+
+```bash
+# Test pipelines
+npm run test:kedro:package    # NPM package integrity
+npm run test:kedro:structure  # Project structure validation
+npm run test:kedro:docker     # Docker configuration tests
+npm run test:kedro:e2e        # End-to-end tests
+npm run test:kedro:all        # Complete test suite
+
+# Database testing
+npm run test:kedro:db         # Initialize test database from SQL
+npm run test:kedro:db:cleanup # Clean up test database
+npm run test:kedro:db:full    # Full database cycle
+
+# Visual monitoring
+kedro viz run                  # Pipeline visualization at http://127.0.0.1:4141/
+```
+
+### Database Management
+Test databases are created from SQL files in `kedro-pipeline/data/01_raw/sql/`:
+- `schema/`: Table definitions
+- `seed/`: Development data
+- `test/`: Test-specific data
+
+### Development Environment
+Complete Docker-based development environment in `dev-environment/`:
+
+```bash
+cd dev-environment
+make start        # Start all services
+make db-reset     # Reset database to clean state
+make logs         # View logs
+make test         # Run tests
+```
+
+Services:
+- PostgreSQL (port 5432)
+- Redis (port 6379)
+- FastAPI Backend (port 8000)
+- React Frontend (port 3000)
+- Adminer DB UI (port 8080)
+- MailHog Email (port 8025)
 
 ## Development Commands
 

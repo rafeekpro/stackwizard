@@ -1,0 +1,117 @@
+name: Kedro Validation Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'templates/**'
+      - 'src/**'
+      - 'kedro-pipeline/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'templates/**'
+      - 'src/**'
+      - 'kedro-pipeline/**'
+  workflow_dispatch:
+    inputs:
+      pipeline:
+        description: 'Pipeline to run'
+        required: true
+        default: 'validation'
+        type: choice
+        options:
+          - validation
+          - quick
+          - release
+
+jobs:
+  kedro-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10']
+        node-version: ['18.x', '20.x']
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install Node dependencies with retry
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 5
+        max_attempts: 3
+        retry_wait_seconds: 60
+        command: npm ci
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('kedro-pipeline/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install Kedro dependencies
+      run: |
+        python -m pip install --upgrade pip
+        cd kedro-pipeline
+        pip install -r requirements.txt
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      if: ${{ github.event.inputs.pipeline != 'quick' }}
+    
+    - name: Run Kedro Pipeline
+      env:
+        CI: true
+        PIPELINE: ${{ github.event.inputs.pipeline || 'quick' }}
+      run: |
+        cd kedro-pipeline
+        python run_pipeline.py $PIPELINE --env=ci
+    
+    - name: Upload Kedro reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: kedro-reports-${{ matrix.python-version }}-${{ matrix.node-version }}
+        path: |
+          kedro-pipeline/data/08_reporting/*.json
+          kedro-pipeline/logs/*.log
+        retention-days: 7
+    
+    - name: Check validation results
+      run: |
+        if [ -f kedro-pipeline/data/08_reporting/last_error.json ]; then
+          echo "❌ Pipeline failed. Check the error report:"
+          cat kedro-pipeline/data/08_reporting/last_error.json
+          exit 1
+        fi
+        
+        if [ -f kedro-pipeline/data/03_primary/validation_report.json ]; then
+          echo "📊 Validation Report:"
+          cat kedro-pipeline/data/03_primary/validation_report.json
+          
+          # Check if all tests passed
+          success=$(python -c "import json; data=json.load(open('kedro-pipeline/data/03_primary/validation_report.json')); print(data.get('success', False))")
+          if [ "$success" != "True" ]; then
+            echo "❌ Some tests failed"
+            exit 1
+          fi
+        fi
+        
+        echo "✅ All validations passed!"

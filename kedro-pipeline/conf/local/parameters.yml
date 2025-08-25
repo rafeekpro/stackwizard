@@ -1,0 +1,45 @@
+# Local development parameters
+# Overrides for local testing
+
+# Test configuration - full testing locally
+test:
+  ui_libraries:
+    - mui
+    - tailwind
+  docker:
+    enabled: true  # Full Docker testing locally
+    build_timeout: 600  # More time for local builds
+    run_timeout: 120
+    retry_attempts: 3
+  
+# Project generation settings  
+generation:
+  project_name: "local-test-project"
+  database:
+    name: "local_db"
+    user: "local_user"
+    password: "local_pass"
+  ports:
+    api: 8000
+    frontend: 3000
+
+# Validation thresholds - strict for local
+validation:
+  min_test_coverage: 90  # Higher standard locally
+  max_bundle_size_mb: 3  # Stricter size limit
+  required_dependencies:
+    mui:
+      - "@mui/material"
+      - "@mui/icons-material"
+      - "@emotion/react"
+      - "@emotion/styled"
+    tailwind:
+      - "@headlessui/react"
+      - "@heroicons/react"
+      - "tailwindcss"
+
+# Local settings
+ci:
+  parallel_jobs: 8  # Use more cores locally
+  npm_retry_attempts: 1  # Less retries needed locally
+  npm_retry_delay: 10
