@@ -282,6 +282,39 @@ After generation, verify the project works:
 
 **Important**: Never merge features to main without updating version!
 
+## 🤖 AUTOMATED TEST CHECKING RULES FOR CLAUDE
+
+### BEFORE EVERY COMMIT:
+1. **CHECK CI STATUS**: Run `gh pr checks <PR_NUMBER> --watch=false | grep -E "fail|error"`
+2. **VERIFY TESTS**: If any tests fail:
+   - Analyze the failure logs: `gh run view <RUN_ID> --log-failed | head -100`
+   - Distinguish between code issues vs infrastructure issues (npm network errors, rate limits)
+   - Fix code issues immediately before proceeding
+   - Re-run infrastructure failures with: `gh run rerun <RUN_ID> --failed`
+
+### AUTOMATIC ACTIONS:
+When working on PRs, Claude MUST:
+1. **Monitor CI Status**: Check test status after pushing commits
+2. **Fix Test Failures**: If tests fail due to code issues, fix them immediately
+3. **Re-run Flaky Tests**: Automatically re-run tests that fail due to network/infrastructure
+4. **Report Status**: Always inform about test status and any failures
+
+### TEST FAILURE PROTOCOL:
+```bash
+# 1. Check PR status
+gh pr checks <PR_NUMBER> --watch=false
+
+# 2. If failures exist, get details
+gh run view <RUN_ID> --log-failed | head -200
+
+# 3. Analyze failure type:
+#    - Code issue → Fix immediately
+#    - Network/npm issue → Re-run: gh run rerun <RUN_ID> --failed
+#    - Rate limit → Wait and re-run
+
+# 4. Verify all tests pass before marking task complete
+```
+
 ## 🎯 GOLDEN RULES
 
 1. **If it's not tested, it's broken**
@@ -289,6 +322,7 @@ After generation, verify the project works:
 3. **If it's not documented, it doesn't exist**
 4. **If tests don't pass, don't merge**
 5. **If Docker doesn't work, users can't use it**
+6. **CLAUDE MUST CHECK TESTS AUTOMATICALLY**
 
 ## 📋 PR Checklist
 
@@ -297,6 +331,7 @@ Before creating a Pull Request, ensure:
 - [ ] CHANGELOG.md updated
 - [ ] Documentation updated if needed
 - [ ] Lint and format checks pass
+- [ ] CI status checked and all tests green
 - [ ] Docker Compose tested locally
 - [ ] No hardcoded secrets or credentials
 - [ ] Branch follows naming convention
