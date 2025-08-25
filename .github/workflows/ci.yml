@@ -7,295 +7,225 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  test-generator:
-    name: Test Generator CLI
+  # Main Kedro test pipeline - replaces all individual tests
+  kedro-tests:
+    name: Run All Tests via Kedro
     runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18.x'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run generator tests
-      run: npm test
-      
-    - name: Check code style
-      run: npm run lint || true
-
-  test-backend-template:
-    name: Test Backend Template
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
     
     services:
       postgres:
-        image: postgres:15
+        image: postgres:15-alpine
         env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpass
-          POSTGRES_DB: testdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stackwizard_test
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          - 5432:5432
-    
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4
     
-    - name: Set up Python 3.11
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-        cache: 'pip'
-        cache-dependency-path: templates/common/backend/requirements.txt
     
-    - name: Install dependencies
-      working-directory: templates/common/backend
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install Node dependencies
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 5
+        max_attempts: 3
+        retry_wait_seconds: 60
+        command: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-kedro-${{ hashFiles('kedro-pipeline/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-kedro-
+          ${{ runner.os }}-pip-
+    
+    - name: Install Kedro and dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install kedro kedro-datasets psycopg2-binary
+        cd kedro-pipeline
         pip install -r requirements.txt
-        pip install pytest pytest-cov pytest-asyncio httpx
     
-    - name: Run backend tests
-      working-directory: templates/common/backend
-      env:
-        DATABASE_URL: postgresql://testuser:testpass@127.0.0.1:5432/testdb
-        SECRET_KEY: test-secret-key-for-ci
-        ENVIRONMENT: test
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Configure database for CI
       run: |
-        pytest tests/ -v --cov=app --cov-report=term-missing --cov-report=xml
-    
-    - name: Upload backend coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: backend-coverage
-        path: templates/common/backend/coverage.xml
-
-  test-frontend-mui:
-    name: Test Frontend MUI Template
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18.x'
-    
-    - name: Install dependencies
-      working-directory: templates/frontend-mui
-      run: npm ci --legacy-peer-deps
-    
-    - name: Run tests
-      working-directory: templates/frontend-mui
-      run: npm test -- --watchAll=false --coverage --passWithNoTests
-      env:
-        CI: true
-    
-    - name: Check build
-      working-directory: templates/frontend-mui
-      run: npm run build
-      env:
-        CI: false  # Disable treating warnings as errors for now
-    
-    - name: Upload MUI coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: mui-coverage
-        path: templates/frontend-mui/coverage/
-
-  test-frontend-tailwind:
-    name: Test Frontend Tailwind Template
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18.x'
-    
-    - name: Install dependencies
-      working-directory: templates/frontend-tailwind
-      run: npm ci --legacy-peer-deps
-    
-    - name: Run tests
-      working-directory: templates/frontend-tailwind
-      run: npm test -- --watchAll=false --coverage --passWithNoTests
-      env:
-        CI: true
-    
-    - name: Check build
-      working-directory: templates/frontend-tailwind
-      run: npm run build
-      env:
-        CI: false  # Disable treating warnings as errors for now
-    
-    - name: Upload Tailwind coverage
-      uses: actions/upload-artifact@v4
-      with:
-        name: tailwind-coverage
-        path: templates/frontend-tailwind/coverage/
-
-  integration-test:
-    name: Integration Test - Generate Project
-    runs-on: ubuntu-latest
-    needs: [test-generator, test-backend-template, test-frontend-mui, test-frontend-tailwind]
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18.x'
-        cache: 'npm'
-    
-    - name: Install generator dependencies
-      run: npm ci
-    
-    - name: Install expect
-      run: sudo apt-get update && sudo apt-get install -y expect
-    
-    - name: Generate test project with MUI
-      run: |
-        expect -c "
-        set timeout 60
-        spawn node src/index.js
-        expect \"What is your project name?\"
-        send \"test-project-mui\r\"
-        expect \"Choose your UI library\"
-        send \"\r\"
-        expect \"Database name\"
-        send \"testdb\r\"
-        expect \"Database user\"
-        send \"testuser\r\"
-        expect \"Database password\"
-        send \"testpass\r\"
-        expect \"Backend API port\"
-        send \"8000\r\"
-        expect \"Frontend port\"
-        send \"3000\r\"
-        expect \"Select additional features\"
-        send \"\r\"
-        expect eof
-        " || echo "Expect script finished"
+        cd kedro-pipeline
+        # Update parameters for CI environment
+        cat > conf/local/parameters.yml << EOF
+        database:
+          host: "localhost"
+          port: 5432
+          admin_user: "postgres"
+          admin_password: "postgres"
+          test_db_name: "stackwizard_test"
+          test_user: "stackwizard_user"
+          test_password: "stackwizard_pass"
+          clean_start: true
+          cleanup_after_test: true
         
-        sleep 2
-        if [ -d "test-project-mui" ]; then
-          echo "✅ Project created successfully"
-          ls -la test-project-mui/
+        sql_path: "data/01_raw/sql"
+        data_type: "test"
+        
+        test:
+          ui_libraries:
+            - mui
+            - tailwind
+          docker:
+            build_timeout: 300
+            run_timeout: 60
+            retry_attempts: 3
+        
+        generation:
+          project_name: "ci-test-project"
+          database:
+            name: "testdb"
+            user: "testuser"
+            password: "testpass"
+          ports:
+            api: 8888
+            frontend: 3888
+        
+        validation:
+          min_test_coverage: 80
+          max_bundle_size_mb: 5
+          required_dependencies:
+            mui:
+              - "@mui/material"
+              - "@mui/icons-material"
+            tailwind:
+              - "tailwindcss"
+              - "@headlessui/react"
+        EOF
+    
+    - name: Run Kedro Test Pipeline
+      env:
+        CI: true
+      run: |
+        cd kedro-pipeline
+        echo "🧪 Running complete test suite via Kedro..."
+        kedro run --pipeline test:all
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: kedro-test-results-${{ github.run_number }}
+        path: |
+          kedro-pipeline/data/02_intermediate/*.json
+          kedro-pipeline/data/03_primary/*.json
+          kedro-pipeline/data/08_reporting/*.json
+        retention-days: 7
+    
+    - name: Check test results
+      if: always()
+      run: |
+        cd kedro-pipeline
+        
+        # Check if final report exists
+        if [ -f data/03_primary/final_test_report.json ]; then
+          echo "📊 Test Report Summary:"
+          python -c "
+import json
+with open('data/03_primary/final_test_report.json') as f:
+    data = json.load(f)
+    summary = data.get('summary', {})
+    print(f\"Total tests: {summary.get('total_tests', 0)}\")
+    print(f\"Passed: {summary.get('passed', 0)}\")
+    print(f\"Failed: {summary.get('failed', 0)}\")
+    print(f\"Warnings: {summary.get('warnings', 0)}\")
+    
+    if data.get('failed_tests'):
+        print('\n❌ Failed tests:')
+        for test in data['failed_tests']:
+            print(f\"  - {test}\")
+    
+    if not data.get('success', False):
+        exit(1)
+          "
         else
-          echo "❌ Project not created"
-          ls -la
+          echo "⚠️ No test report found"
           exit 1
         fi
     
-    - name: Generate test project with Tailwind
-      run: |
-        expect -c "
-        set timeout 60
-        spawn node src/index.js
-        expect \"What is your project name?\"
-        send \"test-project-tailwind\r\"
-        expect \"Choose your UI library\"
-        send \"\033\[B\r\"
-        expect \"Database name\"
-        send \"testdb\r\"
-        expect \"Database user\"
-        send \"testuser\r\"
-        expect \"Database password\"
-        send \"testpass\r\"
-        expect \"Backend API port\"
-        send \"8000\r\"
-        expect \"Frontend port\"
-        send \"3001\r\"
-        expect \"Select additional features\"
-        send \"\r\"
-        expect eof
-        " || echo "Expect script finished"
-        
-        sleep 2
-        if [ -d "test-project-tailwind" ]; then
-          echo "✅ Project created successfully"
-          ls -la test-project-tailwind/
-        else
-          echo "❌ Project not created"
-          ls -la
-          exit 1
-        fi
-    
-    - name: Check generated project structure
-      run: |
-        # Check MUI project
-        test -f test-project-mui/docker-compose.yml
-        test -d test-project-mui/backend
-        test -d test-project-mui/frontend
-        test -f test-project-mui/.env
-        
-        # Check Tailwind project
-        test -f test-project-tailwind/docker-compose.yml
-        test -d test-project-tailwind/backend
-        test -d test-project-tailwind/frontend
-        test -f test-project-tailwind/.env
-
-  docker-build-test:
-    name: Docker Build Test
-    runs-on: ubuntu-latest
-    needs: [integration-test]
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v3
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v7
       with:
-        node-version: '18.x'
-        cache: 'npm'
-    
-    - name: Install generator dependencies
-      run: npm ci
-    
-    - name: Install expect
-      run: sudo apt-get update && sudo apt-get install -y expect
-    
-    - name: Generate test project
-      run: |
-        expect -c "
-        set timeout 60
-        spawn node src/index.js
-        expect \"What is your project name?\"
-        send \"docker-test-project\r\"
-        expect \"Choose your UI library\"
-        send \"\r\"
-        expect \"Database name\"
-        send \"testdb\r\"
-        expect \"Database user\"
-        send \"testuser\r\"
-        expect \"Database password\"
-        send \"testpass\r\"
-        expect \"Backend API port\"
-        send \"8000\r\"
-        expect \"Frontend port\"
-        send \"3000\r\"
-        expect \"Select additional features\"
-        send \"\r\"
-        expect eof
-        " || echo "Expect script finished"
-    
-    - name: Test Docker Compose build
-      working-directory: docker-test-project
-      run: |
-        docker compose build
-        docker compose config
+        script: |
+          const fs = require('fs');
+          let comment = '## 🧪 Kedro Test Results\n\n';
+          
+          try {
+            const reportPath = 'kedro-pipeline/data/03_primary/final_test_report.json';
+            if (fs.existsSync(reportPath)) {
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              const summary = report.summary || {};
+              
+              comment += `| Metric | Value |\n`;
+              comment += `|--------|-------|\n`;
+              comment += `| Total Tests | ${summary.total_tests || 0} |\n`;
+              comment += `| ✅ Passed | ${summary.passed || 0} |\n`;
+              comment += `| ❌ Failed | ${summary.failed || 0} |\n`;
+              comment += `| ⚠️ Warnings | ${summary.warnings || 0} |\n`;
+              
+              if (report.failed_tests && report.failed_tests.length > 0) {
+                comment += `\n### Failed Tests:\n`;
+                report.failed_tests.forEach(test => {
+                  comment += `- ❌ ${test}\n`;
+                });
+              }
+              
+              comment += `\n${report.success ? '✅ **All tests passed!**' : '❌ **Some tests failed**'}`;
+            } else {
+              comment += '⚠️ No test results found';
+            }
+          } catch (error) {
+            comment += `⚠️ Error reading test results: ${error.message}`;
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  # Code quality checks (kept separate for quick feedback)
+  lint-and-format:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+      - name: Run linter
+        run: npm run lint
+      - name: Check formatting
+        run: npm run format:check
