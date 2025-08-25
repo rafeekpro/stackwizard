@@ -1,0 +1,55 @@
+#!/bin/sh
+
+# Pre-push hook - PREVENTS pushing broken code to GitHub
+# This hook runs comprehensive validation before allowing push
+
+echo "🔍 Running pre-push validation..."
+echo "This will ensure your code works in Docker before pushing."
+echo ""
+
+# Check if we're in the project directory
+if [ ! -f "package.json" ]; then
+    echo "❌ Error: Not in project root directory"
+    exit 1
+fi
+
+# Run quick validation first
+echo "⚡ Running quick validation..."
+npm run validate:quick
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Quick validation failed!"
+    echo "Fix the errors above before pushing."
+    exit 1
+fi
+
+# For main branch, run full validation
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$current_branch" = "main" ] || [ "$current_branch" = "master" ]; then
+    echo ""
+    echo "🚀 Pushing to main branch - running FULL validation..."
+    echo "This will take a few minutes but ensures everything works."
+    echo ""
+    
+    npm run validate:full
+    
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "❌ Full validation failed!"
+        echo "DO NOT push to main with failing tests."
+        echo ""
+        echo "To fix:"
+        echo "1. Run: npm run validate:full"
+        echo "2. Fix any errors shown"
+        echo "3. Try pushing again"
+        exit 1
+    fi
+fi
+
+echo ""
+echo "✅ All validations passed! Pushing to GitHub..."
+echo ""
+
+# Allow the push
+exit 0
