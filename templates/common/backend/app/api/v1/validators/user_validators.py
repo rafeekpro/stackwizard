@@ -240,8 +240,8 @@ def validate_bulk_operation(
         try:
             validated_ids.append(str(validate_uuid(user_id, "User ID")))
         except HTTPException:
-            # Skip invalid IDs or raise error
-            pass
+            # Log invalid IDs for debugging
+            logging.warning(f"Invalid user ID skipped during bulk operation: {user_id}")
     
     if not validated_ids:
         raise HTTPException(
