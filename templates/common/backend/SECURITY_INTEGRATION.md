@@ -12,8 +12,12 @@ pip install -r requirements.txt
 
 New dependencies added:
 - `slowapi==0.1.9` - Rate limiting
-- `python-csrf==1.0.0` - CSRF protection  
-- `secure==0.3.0` - Security headers
+- `limits==3.7.0` - Rate limiting backend
+
+Optional dependencies for production:
+```bash
+pip install redis==5.0.1  # For distributed rate limiting and token storage
+```
 
 ### 2. Update main.py
 

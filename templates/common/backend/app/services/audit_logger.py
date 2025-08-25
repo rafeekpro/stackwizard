@@ -4,9 +4,9 @@ Logs security-related events for compliance and monitoring
 """
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, List
-from uuid import UUID
+from uuid import UUID, uuid4
 from enum import Enum
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -73,7 +73,7 @@ class AuditLogEntry(Base):
     """Database model for audit log entries"""
     __tablename__ = "audit_logs"
     
-    id = Column(PGUUID(as_uuid=True), primary_key=True, default=UUID)
+    id = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     timestamp = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     event_type = Column(SQLEnum(AuditEventType), nullable=False, index=True)
     

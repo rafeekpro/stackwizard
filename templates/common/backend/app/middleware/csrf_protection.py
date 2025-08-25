@@ -4,13 +4,12 @@ Implements Cross-Site Request Forgery protection
 """
 import secrets
 import logging
-from typing import Optional, Set
+from typing import Optional, Set, Dict
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Request, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.datastructures import MutableHeaders
 
 from app.core.config import settings
 
