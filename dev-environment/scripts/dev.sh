@@ -115,7 +115,19 @@ function reset_database() {
     # Load seed data
     for sql_file in "$PROJECT_ROOT/../kedro-pipeline/data/01_raw/sql/seed"/*.sql; do
         echo "Loading seed data from $(basename $sql_file)..."
-        docker-compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T postgres psql -U ${POSTGRES_USER:-stackwizard} ${POSTGRES_DB:-stackwizard_dev} < "$sql_file"
+    docker-compose -f "$PROJECT_ROOT/docker-compose.yml" exec postgres psql -U "${POSTGRES_USER:-stackwizard}" -c "DROP DATABASE IF EXISTS ${POSTGRES_DB:-stackwizard_dev};"
+    docker-compose -f "$PROJECT_ROOT/docker-compose.yml" exec postgres psql -U "${POSTGRES_USER:-stackwizard}" -c "CREATE DATABASE ${POSTGRES_DB:-stackwizard_dev};"
+    
+    # Run initialization scripts
+    for sql_file in "$PROJECT_ROOT/../kedro-pipeline/data/01_raw/sql/schema"/*.sql; do
+        echo "Executing $(basename $sql_file)..."
+        docker-compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T postgres psql -U "${POSTGRES_USER:-stackwizard}" "${POSTGRES_DB:-stackwizard_dev}" < "$sql_file"
+    done
+    
+    # Load seed data
+    for sql_file in "$PROJECT_ROOT/../kedro-pipeline/data/01_raw/sql/seed"/*.sql; do
+        echo "Loading seed data from $(basename $sql_file)..."
+        docker-compose -f "$PROJECT_ROOT/docker-compose.yml" exec -T postgres psql -U "${POSTGRES_USER:-stackwizard}" "${POSTGRES_DB:-stackwizard_dev}" < "$sql_file"
     done
     
     # Restart backend
