@@ -57,10 +57,28 @@ class DockerRuntimeTest {
       path.join(this.testDir, 'frontend')
     );
     
-    // Copy docker-compose
-    await fs.copy(
+    // Copy and process docker-compose.yml (replace template variables)
+    const dockerComposeTemplate = await fs.readFile(
       path.join(projectRoot, 'templates', 'common', 'docker-compose.yml'),
-      path.join(this.testDir, 'docker-compose.yml')
+      'utf8'
+    );
+    const dockerComposeContent = dockerComposeTemplate
+      .replace(/{{PROJECT_NAME}}/g, 'test-project')
+      .replace(/{{DB_NAME}}/g, 'test_db')
+      .replace(/{{DB_USER}}/g, 'test_user')
+      .replace(/{{DB_PASSWORD}}/g, 'test_pass')
+      .replace(/{{API_PORT}}/g, '8000')
+      .replace(/{{FRONTEND_PORT}}/g, '3000');
+    
+    await fs.writeFile(
+      path.join(this.testDir, 'docker-compose.yml'),
+      dockerComposeContent
+    );
+    
+    // Copy database files
+    await fs.copy(
+      path.join(projectRoot, 'templates', 'common', 'database'),
+      path.join(this.testDir, 'database')
     );
     
     // Create .env
