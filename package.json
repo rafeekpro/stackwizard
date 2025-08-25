@@ -1,6 +1,6 @@
 {
   "name": "@rafeekpro/stackwizard",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "🧙‍♂️ Magical full-stack project generator with FastAPI, React, PostgreSQL, and Docker",
   "main": "src/index.js",
   "bin": {
@@ -20,6 +20,7 @@
     "test:package": "node test/test-npm-package-files.js",
     "test:structure": "node test/test-generated-structure.js",
     "test:docker": "node test/test-docker-compose.js",
+    "test:docker-deps": "node test/test-docker-dependencies.js",
     "test:errors": "jest test/error-handling.test.js --verbose",
     "test:all": "npm run test:package && npm run test:structure && npm run test:errors",
     "test:ci": "npm run test:package && npm run test:structure",

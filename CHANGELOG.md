@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2025-08-25
+
+### 🐛 Bug Fixes
+- **Docker npm dependencies** - Fixed missing MUI dependencies in Docker containers
+  - Improved Dockerfile npm installation logic to handle both npm ci and npm install
+  - Fixed .npmignore to include package-lock.json files in templates
+  - Ensures all frontend dependencies are properly installed in containers
+  
+### 🔧 Improvements
+- **Dependency verification test** - Added test to verify Docker container dependencies
+  - Created test-docker-dependencies.js for automated verification
+  - Prevents regression of missing npm packages in Docker builds
+
 ## [1.2.1] - 2025-08-25
 
 ### 🐛 Bug Fixes
