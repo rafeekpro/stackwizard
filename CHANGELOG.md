@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2025-08-25
+
+### 🐛 Bug Fixes
+- **MUI Navbar Color** - Fixed missing blue background color in Material UI navbar
+  - Added explicit background color (#1976d2) to AppBar component
+  - Ensures consistent appearance across MUI v5
+
+### 📚 Documentation
+- **Automated Test Checking** - Added mandatory CI/CD test verification rules for Claude
+  - Automatic test status monitoring after commits
+  - Distinction between code issues vs infrastructure issues
+  - Automatic re-run for network/rate limit failures
+
 ## [1.2.0] - 2025-08-25
 
 ### ✨ New Features
