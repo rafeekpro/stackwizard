@@ -145,7 +145,7 @@ async def create_user_by_admin(
     )
 
 
-@router.put("/{user_id}", response_model=UserResponse)
+@router.put("/{user_id}", response_model=UserSchema)
 async def update_user_by_admin(
     user_id: UUID,
     user_update: AdminUserUpdate,
@@ -208,11 +208,7 @@ async def update_user_by_admin(
     await db.commit()
     await db.refresh(user)
     
-    return UserResponse(
-        success=True,
-        message="User updated successfully",
-        user=UserSchema.from_orm(user)
-    )
+    return UserSchema.from_orm(user)
 
 
 @router.delete("/{user_id}", response_model=MessageResponse)
@@ -240,7 +236,7 @@ async def delete_user_by_admin(
             detail="Cannot delete your own account"
         )
     
-    await db.delete(user)
+    db.delete(user)
     await db.commit()
     
     return MessageResponse(message="User deleted successfully")
