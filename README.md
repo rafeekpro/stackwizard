@@ -12,13 +12,23 @@
 
 ## ✨ Features
 
+### Core Stack
 - 🚀 **FastAPI Backend** - Modern Python web API with async support, JWT authentication, and 100% type hints
 - ⚛️ **React Frontend** - Choose between Material-UI or Tailwind CSS for your UI
 - 🐘 **PostgreSQL Database** - Production-ready database with Alembic migrations
 - 🐳 **Docker Compose** - Complete containerized development environment with health checks
-- 🔐 **Authentication System** - JWT-based auth with secure password hashing
+
+### Security & Architecture
+- 🔐 **Authentication System** - JWT-based auth with secure password hashing & refresh tokens
+- 🛡️ **Security Middleware** - Rate limiting, CSRF protection, security headers
+- 🏗️ **Service Layer Architecture** - Clean separation with Service/Repository patterns
 - 📚 **API Documentation** - Auto-generated Swagger/OpenAPI documentation
-- 🧪 **Testing Setup** - Pre-configured test suites for both backend and frontend
+
+### Developer Experience
+- 🧪 **Comprehensive Testing** - Cypress E2E tests, unit tests, Docker validation
+- 🎭 **Visual Testing** - Watch Cypress tests run in real-time
+- 🛠️ **Pre-Push Validation** - Automatic Docker & dependency verification
+- 📊 **Test Orchestration** - Makefile & custom orchestrator for test management
 - 🎯 **Best Practices** - Clean architecture, type safety, and production-ready configuration
 
 ## 🚀 Quick Start
@@ -224,6 +234,50 @@ alembic revision --autogenerate -m "Description"
 
 # Apply migrations
 alembic upgrade head
+```
+
+## 🧪 Testing & Validation
+
+### Visual Testing with Cypress
+Watch your tests run in real-time:
+
+```bash
+# Install Cypress
+make cypress-install
+
+# Test MUI template visually
+make cypress-mui
+
+# Test Tailwind template visually
+make cypress-tailwind
+```
+
+### Pre-Push Validation
+Ensure everything works before pushing to GitHub:
+
+```bash
+# Full validation (recommended)
+npm run validate:full
+
+# Quick validation
+npm run validate:quick
+
+# Install git hooks for automatic validation
+npm run install-hooks
+```
+
+### Test Orchestration
+Run comprehensive tests with a single command:
+
+```bash
+# Using Makefile
+make test-all        # Run all tests
+make pre-commit      # Pre-commit checks
+make docker-build-test  # Test Docker builds
+
+# Using orchestrator
+npm run test:orchestrate       # Smart mode
+npm run test:orchestrate:full  # Full test suite
 ```
 
 ## 📦 System Requirements
