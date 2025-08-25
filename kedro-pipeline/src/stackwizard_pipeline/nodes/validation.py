@@ -41,7 +41,32 @@ send "{params['generation']['database']['password']}\\r"
 expect "API port:"
 send "{params['generation']['ports']['api']}\\r"
 expect "Frontend port:"
-send "{params['generation']['ports']['frontend']}\\r"
+    # Escape all variables for expect script
+    esc_project_name = escape_expect_string(str(project_name))
+    esc_db_name = escape_expect_string(str(params['generation']['database']['name']))
+    esc_db_user = escape_expect_string(str(params['generation']['database']['user']))
+    esc_db_password = escape_expect_string(str(params['generation']['database']['password']))
+    esc_api_port = escape_expect_string(str(params['generation']['ports']['api']))
+    esc_frontend_port = escape_expect_string(str(params['generation']['ports']['frontend']))
+
+    # Create expect script for automation
+    expect_script = f"""#!/usr/bin/expect -f
+set timeout 30
+spawn node {Path.cwd().parent / 'src' / 'index.js'}
+expect "What is your project name?"
+send "{esc_project_name}\\r"
+expect "Choose your UI library"
+send "\\r"
+expect "Database name:"
+send "{esc_db_name}\\r"
+expect "Database user:"
+send "{esc_db_user}\\r"
+expect "Database password:"
+send "{esc_db_password}\\r"
+expect "API port:"
+send "{esc_api_port}\\r"
+expect "Frontend port:"
+send "{esc_frontend_port}\\r"
 expect "Select additional features:"
 send "\\r"
 expect eof
