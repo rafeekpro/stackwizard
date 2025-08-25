@@ -58,7 +58,22 @@ def create_test_database(params: Dict[str, Any]) -> Dict[str, Any]:
         
         # Create database
         try:
-            cur.execute(f"CREATE DATABASE {test_db_name}")
+                cur.execute(
+                    sql.SQL("DROP DATABASE IF EXISTS {}").format(
+                        sql.Identifier(test_db_name)
+                    )
+                )
+                result["warnings"].append(f"Dropped existing database {test_db_name}")
+            except Exception as e:
+                result["warnings"].append(f"Could not drop database: {str(e)}")
+        
+        # Create database
+        try:
+            cur.execute(
+                sql.SQL("CREATE DATABASE {}").format(
+                    sql.Identifier(test_db_name)
+                )
+            )
             result["database_created"] = True
             logger.info(f"Created database {test_db_name}")
         except psycopg2.errors.DuplicateDatabase:
