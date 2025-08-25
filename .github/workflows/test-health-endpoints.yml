@@ -5,11 +5,13 @@ name: Health Endpoints Check
 
 on:
   workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # All original triggers have been disabled
+  # workflow_dispatch:  # DISABLED - use CI with Kedro instead
   # Original triggers disabled - see git history
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+  # push:
+  # branches: [ main, develop ]
+  # pull_request:
+  # branches: [ main ]
 
 jobs:
   test-health-endpoints:

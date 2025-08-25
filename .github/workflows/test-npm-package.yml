@@ -5,18 +5,20 @@ name: Test NPM Package Files
 
 on:
   workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # All original triggers have been disabled
+  # workflow_dispatch:  # DISABLED - use CI with Kedro instead
   # Original triggers disabled - see git history
-  push:
-    branches: [main, develop, release/*]
-  pull_request:
-    branches: [main]
-    paths:
-      - '.npmignore'
-      - 'package.json'
-      - 'templates/**'
-      - 'src/**'
-      - 'test/test-npm-package-files.js'
-      - '.github/workflows/test-npm-package.yml'
+  # push:
+  # branches: [main, develop, release/*]
+  # pull_request:
+  # branches: [main]
+  # paths:
+  # - '.npmignore'
+  # - 'package.json'
+  # - 'templates/**'
+  # - 'src/**'
+  # - 'test/test-npm-package-files.js'
+  # - '.github/workflows/test-npm-package.yml'
 
 jobs:
   test-npm-package:

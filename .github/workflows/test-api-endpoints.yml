@@ -5,8 +5,10 @@ name: API Endpoint Check
 
 on:
   workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # All original triggers have been disabled
+  # workflow_dispatch:  # DISABLED - use CI with Kedro instead
   # Original triggers disabled - see git history
-  workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # workflow_dispatch:  # DISABLED - use CI with Kedro instead
   # Original triggers disabled:
   # push:
   #   branches: [ main, develop ]

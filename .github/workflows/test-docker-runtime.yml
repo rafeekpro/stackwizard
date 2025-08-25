@@ -5,16 +5,18 @@ name: Test Docker Runtime
 
 on:
   workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # All original triggers have been disabled
+  # workflow_dispatch:  # DISABLED - use CI with Kedro instead
   # Original triggers disabled - see git history
-  pull_request:
-    paths:
-      - 'templates/**'
-      - 'src/**'
-      - '.github/workflows/test-docker-runtime.yml'
-      - 'test/test-docker-runtime.js'
-  push:
-    branches: [main]
-  workflow_dispatch:
+  # pull_request:
+  # paths:
+  # - 'templates/**'
+  # - 'src/**'
+  # - '.github/workflows/test-docker-runtime.yml'
+  # - 'test/test-docker-runtime.js'
+  # push:
+  # branches: [main]
+  # workflow_dispatch:
 
 jobs:
   docker-runtime-test:

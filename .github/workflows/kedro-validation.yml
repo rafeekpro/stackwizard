@@ -5,30 +5,32 @@ name: Kedro Validation Pipeline
 
 on:
   workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # All original triggers have been disabled
+  # workflow_dispatch:  # DISABLED - use CI with Kedro instead
   # Original triggers disabled - see git history
-  push:
-    branches: [ main, develop ]
-    paths:
-      - 'templates/**'
-      - 'src/**'
-      - 'kedro-pipeline/**'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'templates/**'
-      - 'src/**'
-      - 'kedro-pipeline/**'
-  workflow_dispatch:
-    inputs:
-      pipeline:
-        description: 'Pipeline to run'
-        required: true
-        default: 'validation'
-        type: choice
-        options:
-          - validation
-          - quick
-          - release
+  # push:
+  # branches: [ main, develop ]
+  # paths:
+  # - 'templates/**'
+  # - 'src/**'
+  # - 'kedro-pipeline/**'
+  # pull_request:
+  # branches: [ main ]
+  # paths:
+  # - 'templates/**'
+  # - 'src/**'
+  # - 'kedro-pipeline/**'
+  # workflow_dispatch:
+  # inputs:
+  # pipeline:
+  # description: 'Pipeline to run'
+  # required: true
+  # default: 'validation'
+  # type: choice
+  # options:
+  # - validation
+  # - quick
+  # - release
 
 jobs:
   kedro-validation:

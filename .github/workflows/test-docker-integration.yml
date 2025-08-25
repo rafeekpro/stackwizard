@@ -5,18 +5,20 @@ name: Docker Integration Test
 
 on:
   workflow_dispatch:  # DISABLED - use CI with Kedro instead
+  # All original triggers have been disabled
+  # workflow_dispatch:  # DISABLED - use CI with Kedro instead
   # Original triggers disabled - see git history
-  push:
-    branches: [main, develop, release/*]
-  pull_request:
-    branches: [main]
-    paths:
-      - 'templates/common/backend/**'
-      - 'templates/common/docker-compose.yml'
-      - 'templates/common/database/**'
-      - 'templates/frontend-*/**'
-      - 'test/test-docker-compose.js'
-      - '.github/workflows/test-docker-integration.yml'
+  # push:
+  # branches: [main, develop, release/*]
+  # pull_request:
+  # branches: [main]
+  # paths:
+  # - 'templates/common/backend/**'
+  # - 'templates/common/docker-compose.yml'
+  # - 'templates/common/database/**'
+  # - 'templates/frontend-*/**'
+  # - 'test/test-docker-compose.js'
+  # - '.github/workflows/test-docker-integration.yml'
 
 jobs:
   docker-integration:
