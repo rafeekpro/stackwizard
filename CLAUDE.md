@@ -227,14 +227,32 @@ After generation, verify the project works:
 - **DATABASE INDEXES**: Add appropriate indexes for queries
 - **CACHING**: Implement caching where appropriate
 
-### 10. Release Process
+### 10. Release Process & Version Management
+
+#### Version Bumping Rules
+**ALWAYS UPDATE VERSION** when making changes:
+- **Bug fixes & minor improvements**: Increment PATCH (1.1.0 → 1.1.1)
+- **New features (backward compatible)**: Increment MINOR (1.1.0 → 1.2.0)
+- **Breaking changes**: Increment MAJOR (1.1.0 → 2.0.0)
+
+**When to bump version:**
+- ✅ ANY bug fix merged to main
+- ✅ ANY new feature added
+- ✅ ANY improvement that affects users
+- ✅ Template updates or fixes
+- ❌ Documentation-only changes (unless significant)
+- ❌ Dev dependency updates (unless affecting build)
+
+#### Release Process
 1. **Create Release Branch**: `release/vX.Y.Z`
-2. **Update Version**: In `package.json`
+2. **Update Version**: In `package.json` (REQUIRED!)
 3. **Update CHANGELOG**: Move unreleased items to new version section
 4. **Run Full Tests**: `npm run test:all`
 5. **Create PR**: For review
 6. **Merge & Tag**: After approval
 7. **Publish to NPM**: `npm publish`
+
+**Important**: Never merge features to main without updating version!
 
 ## 🎯 GOLDEN RULES
 
