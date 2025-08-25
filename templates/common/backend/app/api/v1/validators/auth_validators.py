@@ -88,9 +88,10 @@ def validate_registration_data(
     # Validate password
     is_valid, errors = validate_password_strength(password)
     if not is_valid:
+        error_details = "; ".join(errors) if errors else ""
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"message": "Password does not meet requirements", "errors": errors}
+            detail=f"Password does not meet requirements. {error_details}"
         )
     validated_data['password'] = password
     
